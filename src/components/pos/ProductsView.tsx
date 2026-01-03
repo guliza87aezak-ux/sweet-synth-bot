@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Product } from '@/types/pos';
-import { Plus, Edit2, Trash2, Search, Package } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Package, ScanBarcode, Camera, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { categories } from '@/data/sampleProducts';
+import { toast } from 'sonner';
 
 interface ProductsViewProps {
   products: Product[];
@@ -27,6 +28,10 @@ const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newProduct, setNewProduct] = useState(emptyProduct);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const filteredProducts = products.filter(
     (p) => p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -39,6 +44,50 @@ const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }
     setIsAddDialogOpen(false);
   };
 
+  const startScanner = async () => {
+    setIsScannerOpen(true);
+    setIsScanning(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (error) {
+      toast.error('Не удалось получить доступ к камере');
+      setIsScannerOpen(false);
+      setIsScanning(false);
+    }
+  };
+
+  const stopScanner = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsScannerOpen(false);
+    setIsScanning(false);
+  };
+
+  const simulateScan = () => {
+    // Симуляция сканирования - генерируем случайный штрихкод
+    const randomBarcode = Math.floor(1000000000000 + Math.random() * 9000000000000).toString();
+    setNewProduct({ ...newProduct, barcode: randomBarcode });
+    stopScanner();
+    setIsAddDialogOpen(true);
+    toast.success(`Штрихкод отсканирован: ${randomBarcode}`);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -47,13 +96,23 @@ const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }
           <h2 className="text-2xl font-bold text-foreground">Управление товарами</h2>
           <p className="text-muted-foreground">{products.length} товаров в каталоге</p>
         </div>
-        <Button 
-          onClick={() => setIsAddDialogOpen(true)}
-          className="bg-accent hover:bg-accent/90 text-accent-foreground"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Добавить товар
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={startScanner}
+            variant="outline"
+            className="border-primary/30 text-primary hover:bg-primary/10"
+          >
+            <ScanBarcode className="w-4 h-4 mr-2" />
+            Сканировать
+          </Button>
+          <Button 
+            onClick={() => setIsAddDialogOpen(true)}
+            className="bg-accent hover:bg-accent/90 text-accent-foreground"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Добавить товар
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
@@ -132,6 +191,47 @@ const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }
           </tbody>
         </table>
       </div>
+
+      {/* Scanner Dialog */}
+      <Dialog open={isScannerOpen} onOpenChange={(open) => !open && stopScanner()}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Camera className="w-5 h-5" />
+              Сканер штрихкода
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+              />
+              {isScanning && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-48 h-32 border-2 border-primary rounded-lg animate-pulse" />
+                </div>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground text-center">
+              Наведите камеру на штрихкод товара
+            </p>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={stopScanner} className="flex-1">
+                <X className="w-4 h-4 mr-2" />
+                Отмена
+              </Button>
+              <Button onClick={simulateScan} className="flex-1">
+                <ScanBarcode className="w-4 h-4 mr-2" />
+                Симуляция скана
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Product Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
