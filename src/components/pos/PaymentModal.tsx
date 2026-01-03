@@ -2,20 +2,23 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CheckCircle2, Banknote, CreditCard, Printer } from 'lucide-react';
+import { CheckCircle2, Banknote, CreditCard, Printer, Receipt, X } from 'lucide-react';
+import { CartItem } from '@/types/pos';
 
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   total: number;
   method: 'cash' | 'card';
+  items: CartItem[];
   onConfirm: (cashReceived?: number) => void;
 }
 
-const PaymentModal = ({ isOpen, onClose, total, method, onConfirm }: PaymentModalProps) => {
+const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: PaymentModalProps) => {
   const [cashReceived, setCashReceived] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
 
   const cashAmount = parseFloat(cashReceived) || 0;
   const change = cashAmount - total;
@@ -27,6 +30,8 @@ const PaymentModal = ({ isOpen, onClose, total, method, onConfirm }: PaymentModa
     Math.ceil(total / 10000) * 10000,
   ].filter((v, i, a) => a.indexOf(v) === i && v >= total);
 
+  const currentDate = new Date();
+
   const handleConfirm = async () => {
     setIsProcessing(true);
     
@@ -35,27 +40,131 @@ const PaymentModal = ({ isOpen, onClose, total, method, onConfirm }: PaymentModa
     
     setIsProcessing(false);
     setIsComplete(true);
-    
-    // Auto close after success
-    setTimeout(() => {
-      onConfirm(method === 'cash' ? cashAmount : undefined);
-      setIsComplete(false);
-      setCashReceived('');
-    }, 2000);
+  };
+
+  const handleShowReceipt = () => {
+    setShowReceipt(true);
+  };
+
+  const handleCloseReceipt = () => {
+    onConfirm(method === 'cash' ? cashAmount : undefined);
+    setShowReceipt(false);
+    setIsComplete(false);
+    setCashReceived('');
   };
 
   const handleClose = () => {
-    if (!isProcessing) {
+    if (!isProcessing && !showReceipt) {
       onClose();
       setIsComplete(false);
       setCashReceived('');
     }
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
-        {isComplete ? (
+      <DialogContent className={showReceipt ? "sm:max-w-sm p-0" : "sm:max-w-md"}>
+        {showReceipt ? (
+          <div className="bg-white text-black font-mono text-sm">
+            {/* Receipt Header */}
+            <div className="p-4 text-center border-b border-dashed border-gray-300">
+              <h2 className="text-lg font-bold">МАГАЗИН</h2>
+              <p className="text-xs text-gray-600 mt-1">г. Алматы, ул. Примерная, 123</p>
+              <p className="text-xs text-gray-600">Тел: +7 777 123 45 67</p>
+            </div>
+
+            {/* Receipt Info */}
+            <div className="px-4 py-2 border-b border-dashed border-gray-300">
+              <div className="flex justify-between text-xs">
+                <span>Чек №{Date.now().toString().slice(-6)}</span>
+                <span>{currentDate.toLocaleDateString('ru-RU')}</span>
+              </div>
+              <div className="flex justify-between text-xs mt-1">
+                <span>Кассир: Admin</span>
+                <span>{currentDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            </div>
+
+            {/* Items */}
+            <div className="px-4 py-3 border-b border-dashed border-gray-300 max-h-48 overflow-y-auto">
+              {items.map((item, index) => (
+                <div key={item.id} className="mb-2">
+                  <div className="flex justify-between">
+                    <span className="truncate flex-1">{index + 1}. {item.name}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-600 pl-3">
+                    <span>{item.quantity} x {item.price.toLocaleString()} ₸</span>
+                    <span className="font-medium text-black">{(item.quantity * item.price).toLocaleString()} ₸</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Totals */}
+            <div className="px-4 py-3 border-b border-dashed border-gray-300 space-y-1">
+              <div className="flex justify-between text-xs">
+                <span>Подитог:</span>
+                <span>{total.toLocaleString()} ₸</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span>НДС (0%):</span>
+                <span>0 ₸</span>
+              </div>
+              <div className="flex justify-between font-bold text-base pt-2 border-t border-gray-200">
+                <span>ИТОГО:</span>
+                <span>{total.toLocaleString()} ₸</span>
+              </div>
+            </div>
+
+            {/* Payment Info */}
+            <div className="px-4 py-2 border-b border-dashed border-gray-300">
+              <div className="flex justify-between text-xs">
+                <span>Способ оплаты:</span>
+                <span>{method === 'cash' ? 'Наличные' : 'Карта'}</span>
+              </div>
+              {method === 'cash' && cashAmount > 0 && (
+                <>
+                  <div className="flex justify-between text-xs mt-1">
+                    <span>Получено:</span>
+                    <span>{cashAmount.toLocaleString()} ₸</span>
+                  </div>
+                  <div className="flex justify-between text-xs mt-1 font-medium">
+                    <span>Сдача:</span>
+                    <span>{change.toLocaleString()} ₸</span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 text-center">
+              <p className="text-xs text-gray-600">Спасибо за покупку!</p>
+              <p className="text-xs text-gray-400 mt-1">Товар обмену и возврату подлежит</p>
+              <div className="mt-3 flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1 text-black border-gray-300"
+                  onClick={handlePrint}
+                >
+                  <Printer className="w-4 h-4 mr-1" />
+                  Печать
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="flex-1 bg-accent hover:bg-accent/90"
+                  onClick={handleCloseReceipt}
+                >
+                  Готово
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : isComplete ? (
           <div className="py-8 flex flex-col items-center justify-center animate-scale-in">
             <div className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center mb-4 animate-pulse-success">
               <CheckCircle2 className="w-10 h-10 text-success" />
@@ -66,9 +175,9 @@ const PaymentModal = ({ isOpen, onClose, total, method, onConfirm }: PaymentModa
                 Сдача: <span className="font-bold text-accent">{change.toLocaleString()} ₸</span>
               </p>
             )}
-            <Button variant="outline" className="mt-4" onClick={() => {}}>
-              <Printer className="w-4 h-4 mr-2" />
-              Печать чека
+            <Button variant="outline" className="mt-4" onClick={handleShowReceipt}>
+              <Receipt className="w-4 h-4 mr-2" />
+              Показать чек
             </Button>
           </div>
         ) : (
