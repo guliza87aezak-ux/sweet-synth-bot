@@ -2,27 +2,31 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CheckCircle2, Banknote, CreditCard, Printer, Receipt, X } from 'lucide-react';
+import { CheckCircle2, Banknote, CreditCard, Printer, Receipt, Clock } from 'lucide-react';
 import { CartItem } from '@/types/pos';
+import { Label } from '@/components/ui/label';
 
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   total: number;
-  method: 'cash' | 'card';
+  method: 'cash' | 'card' | 'debt';
   items: CartItem[];
-  onConfirm: (cashReceived?: number) => void;
+  onConfirm: (cashReceived?: number, customerName?: string, customerPhone?: string) => void;
 }
 
 const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: PaymentModalProps) => {
   const [cashReceived, setCashReceived] = useState<string>('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
 
   const cashAmount = parseFloat(cashReceived) || 0;
   const change = cashAmount - total;
-  const canConfirm = method === 'card' || (method === 'cash' && cashAmount >= total);
+  const canConfirm = method === 'card' || method === 'debt' || (method === 'cash' && cashAmount >= total);
+  const canConfirmDebt = method !== 'debt' || (customerName.trim() !== '');
 
   const quickAmounts = [
     Math.ceil(total / 1000) * 1000,
@@ -47,10 +51,16 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
   };
 
   const handleCloseReceipt = () => {
-    onConfirm(method === 'cash' ? cashAmount : undefined);
+    onConfirm(
+      method === 'cash' ? cashAmount : undefined,
+      method === 'debt' ? customerName : undefined,
+      method === 'debt' ? customerPhone : undefined
+    );
     setShowReceipt(false);
     setIsComplete(false);
     setCashReceived('');
+    setCustomerName('');
+    setCustomerPhone('');
   };
 
   const handleClose = () => {
@@ -58,6 +68,8 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
       onClose();
       setIsComplete(false);
       setCashReceived('');
+      setCustomerName('');
+      setCustomerPhone('');
     }
   };
 
@@ -120,12 +132,17 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
               </div>
             </div>
 
-            {/* Payment Info */}
             <div className="px-4 py-2 border-b border-dashed border-gray-300">
               <div className="flex justify-between text-xs">
                 <span>Способ оплаты:</span>
-                <span>{method === 'cash' ? 'Наличные' : 'Карта'}</span>
+                <span>{method === 'cash' ? 'Наличные' : method === 'card' ? 'Карта' : 'В долг'}</span>
               </div>
+              {method === 'debt' && customerName && (
+                <div className="flex justify-between text-xs mt-1">
+                  <span>Клиент:</span>
+                  <span>{customerName}</span>
+                </div>
+              )}
               {method === 'cash' && cashAmount > 0 && (
                 <>
                   <div className="flex justify-between text-xs mt-1">
@@ -189,10 +206,15 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
                     <Banknote className="w-5 h-5 text-accent" />
                     Оплата наличными
                   </>
-                ) : (
+                ) : method === 'card' ? (
                   <>
                     <CreditCard className="w-5 h-5 text-accent" />
                     Оплата картой
+                  </>
+                ) : (
+                  <>
+                    <Clock className="w-5 h-5 text-warning" />
+                    Продажа в долг
                   </>
                 )}
               </DialogTitle>
@@ -254,6 +276,35 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
                   </p>
                 </div>
               )}
+
+              {/* Debt form */}
+              {method === 'debt' && (
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl bg-warning/10 text-center mb-4">
+                    <Clock className="w-12 h-12 mx-auto mb-3 text-warning" />
+                    <p className="text-muted-foreground">Продажа в долг</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="customerName">Имя клиента *</Label>
+                    <Input
+                      id="customerName"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      placeholder="Введите имя клиента"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="customerPhone">Телефон</Label>
+                    <Input
+                      id="customerPhone"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      placeholder="+996 XXX XXX XXX"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Actions */}
@@ -263,7 +314,7 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
               </Button>
               <Button
                 onClick={handleConfirm}
-                disabled={!canConfirm || isProcessing}
+                disabled={!canConfirm || !canConfirmDebt || isProcessing}
                 className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground"
               >
                 {isProcessing ? 'Обработка...' : 'Подтвердить'}

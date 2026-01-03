@@ -1,14 +1,15 @@
-import { Store, BarChart3, Package, Settings, User } from 'lucide-react';
+import { Store, BarChart3, Package, Settings, User, Clock } from 'lucide-react';
 
 interface HeaderProps {
-  currentView: 'pos' | 'reports' | 'products';
-  onViewChange: (view: 'pos' | 'reports' | 'products') => void;
+  currentView: 'pos' | 'reports' | 'products' | 'debts';
+  onViewChange: (view: 'pos' | 'reports' | 'products' | 'debts') => void;
 }
 
 const Header = ({ currentView, onViewChange }: HeaderProps) => {
   const navItems = [
     { id: 'pos' as const, label: 'Касса', icon: Store },
     { id: 'products' as const, label: 'Товары', icon: Package },
+    { id: 'debts' as const, label: 'Долги', icon: Clock },
     { id: 'reports' as const, label: 'Отчёты', icon: BarChart3 },
   ];
 

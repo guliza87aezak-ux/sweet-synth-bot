@@ -10,16 +10,17 @@ import SalesStats from '@/components/pos/SalesStats';
 import PaymentModal from '@/components/pos/PaymentModal';
 import ProductsView from '@/components/pos/ProductsView';
 import ReportsView from '@/components/pos/ReportsView';
+import DebtsView from '@/components/pos/DebtsView';
 import { toast } from 'sonner';
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState<'pos' | 'reports' | 'products'>('pos');
+  const [currentView, setCurrentView] = useState<'pos' | 'reports' | 'products' | 'debts'>('pos');
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
-  const [paymentModal, setPaymentModal] = useState<{ isOpen: boolean; method: 'cash' | 'card' }>({
+  const [paymentModal, setPaymentModal] = useState<{ isOpen: boolean; method: 'cash' | 'card' | 'debt' }>({
     isOpen: false,
     method: 'cash',
   });
@@ -76,12 +77,12 @@ const Index = () => {
   };
 
   // Open payment modal
-  const handleCheckout = (method: 'cash' | 'card') => {
+  const handleCheckout = (method: 'cash' | 'card' | 'debt') => {
     setPaymentModal({ isOpen: true, method });
   };
 
   // Confirm payment
-  const handlePaymentConfirm = (cashReceived?: number) => {
+  const handlePaymentConfirm = (cashReceived?: number, customerName?: string, customerPhone?: string) => {
     const sale: Sale = {
       id: Date.now().toString(),
       items: [...cart],
@@ -90,12 +91,25 @@ const Index = () => {
       timestamp: new Date(),
       cashReceived,
       change: cashReceived ? cashReceived - cartTotal : undefined,
+      customerName,
+      customerPhone,
+      isPaid: paymentModal.method !== 'debt',
     };
 
     setSales((prev) => [...prev, sale]);
     setCart([]);
     setPaymentModal({ isOpen: false, method: 'cash' });
-    toast.success('Продажа завершена!');
+    toast.success(paymentModal.method === 'debt' ? 'Продажа в долг оформлена!' : 'Продажа завершена!');
+  };
+
+  // Pay debt
+  const handlePayDebt = (saleId: string) => {
+    setSales((prev) =>
+      prev.map((sale) =>
+        sale.id === saleId ? { ...sale, isPaid: true } : sale
+      )
+    );
+    toast.success('Долг погашен!');
   };
 
   // Product management
@@ -175,6 +189,12 @@ const Index = () => {
             onEditProduct={handleEditProduct}
             onDeleteProduct={handleDeleteProduct}
           />
+        </div>
+      )}
+
+      {currentView === 'debts' && (
+        <div className="flex-1 overflow-y-auto">
+          <DebtsView sales={sales} onPayDebt={handlePayDebt} />
         </div>
       )}
 

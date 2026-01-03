@@ -1,5 +1,5 @@
 import { Sale, Product } from '@/types/pos';
-import { TrendingUp, ShoppingBag, CreditCard, Banknote, Calendar, Package } from 'lucide-react';
+import { TrendingUp, ShoppingBag, CreditCard, Banknote, Calendar, Package, Clock } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 interface ReportsViewProps {
@@ -12,8 +12,10 @@ const ReportsView = ({ sales, products }: ReportsViewProps) => {
   const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
   const cashSales = sales.filter((s) => s.paymentMethod === 'cash');
   const cardSales = sales.filter((s) => s.paymentMethod === 'card');
+  const debtSales = sales.filter((s) => s.paymentMethod === 'debt' && !s.isPaid);
   const cashTotal = cashSales.reduce((sum, s) => sum + s.total, 0);
   const cardTotal = cardSales.reduce((sum, s) => sum + s.total, 0);
+  const debtTotal = debtSales.reduce((sum, s) => sum + s.total, 0);
 
   // Group sales by hour for chart
   const hourlyData = Array.from({ length: 12 }, (_, i) => {
@@ -56,14 +58,15 @@ const ReportsView = ({ sales, products }: ReportsViewProps) => {
   const paymentData = [
     { name: 'Наличные', value: cashTotal, color: 'hsl(152, 60%, 45%)' },
     { name: 'Карта', value: cardTotal, color: 'hsl(222, 47%, 20%)' },
+    { name: 'Долг', value: debtTotal, color: 'hsl(38, 92%, 50%)' },
   ];
 
   const stats = [
     { label: 'Общая выручка', value: `${totalRevenue.toLocaleString()} сом`, icon: TrendingUp, color: 'text-accent' },
     { label: 'Прибыль', value: `${totalProfit.toLocaleString()} сом`, icon: TrendingUp, color: 'text-success' },
+    { label: 'Долги', value: `${debtTotal.toLocaleString()} сом`, icon: Clock, color: 'text-warning' },
     { label: 'Запасы (себест.)', value: `${inventoryValue.toLocaleString()} сом`, icon: Package, color: 'text-primary' },
-    { label: 'Запасы (розница)', value: `${inventoryRetailValue.toLocaleString()} сом`, icon: Package, color: 'text-warning' },
-    { label: 'Всего продаж', value: sales.length.toString(), icon: ShoppingBag, color: 'text-muted-foreground' },
+    { label: 'Запасы (розница)', value: `${inventoryRetailValue.toLocaleString()} сом`, icon: Package, color: 'text-muted-foreground' },
   ];
 
   return (
