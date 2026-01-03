@@ -190,6 +190,7 @@ const Index = () => {
         onClose={() => setPaymentModal({ isOpen: false, method: 'cash' })}
         total={cartTotal}
         method={paymentModal.method}
+        items={cart}
         onConfirm={handlePaymentConfirm}
       />
     </div>
