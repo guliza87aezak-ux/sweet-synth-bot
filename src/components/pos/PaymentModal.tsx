@@ -97,8 +97,8 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
                     <span className="truncate flex-1">{index + 1}. {item.name}</span>
                   </div>
                   <div className="flex justify-between text-xs text-gray-600 pl-3">
-                    <span>{item.quantity} x {item.price.toLocaleString()} ₸</span>
-                    <span className="font-medium text-black">{(item.quantity * item.price).toLocaleString()} ₸</span>
+                    <span>{item.quantity} x {item.price.toLocaleString()} сом</span>
+                    <span className="font-medium text-black">{(item.quantity * item.price).toLocaleString()} сом</span>
                   </div>
                 </div>
               ))}
@@ -108,15 +108,15 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
             <div className="px-4 py-3 border-b border-dashed border-gray-300 space-y-1">
               <div className="flex justify-between text-xs">
                 <span>Подитог:</span>
-                <span>{total.toLocaleString()} ₸</span>
+                <span>{total.toLocaleString()} сом</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span>НДС (0%):</span>
-                <span>0 ₸</span>
+                <span>0 сом</span>
               </div>
               <div className="flex justify-between font-bold text-base pt-2 border-t border-gray-200">
                 <span>ИТОГО:</span>
-                <span>{total.toLocaleString()} ₸</span>
+                <span>{total.toLocaleString()} сом</span>
               </div>
             </div>
 
@@ -130,11 +130,11 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
                 <>
                   <div className="flex justify-between text-xs mt-1">
                     <span>Получено:</span>
-                    <span>{cashAmount.toLocaleString()} ₸</span>
+                    <span>{cashAmount.toLocaleString()} сом</span>
                   </div>
                   <div className="flex justify-between text-xs mt-1 font-medium">
                     <span>Сдача:</span>
-                    <span>{change.toLocaleString()} ₸</span>
+                    <span>{change.toLocaleString()} сом</span>
                   </div>
                 </>
               )}
@@ -172,7 +172,7 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
             <h3 className="text-xl font-bold text-foreground mb-2">Оплата успешна!</h3>
             {method === 'cash' && change > 0 && (
               <p className="text-muted-foreground">
-                Сдача: <span className="font-bold text-accent">{change.toLocaleString()} ₸</span>
+                Сдача: <span className="font-bold text-accent">{change.toLocaleString()} сом</span>
               </p>
             )}
             <Button variant="outline" className="mt-4" onClick={handleShowReceipt}>
@@ -203,7 +203,7 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-1">К оплате</p>
                 <p className="text-4xl font-bold text-foreground">
-                  {total.toLocaleString()} <span className="text-2xl">₸</span>
+                  {total.toLocaleString()} <span className="text-2xl">сом</span>
                 </p>
               </div>
 
@@ -238,7 +238,7 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
                     <div className="p-4 rounded-xl bg-success/10 text-center">
                       <p className="text-sm text-muted-foreground">Сдача</p>
                       <p className="text-2xl font-bold text-success">
-                        {change.toLocaleString()} ₸
+                        {change.toLocaleString()} сом
                       </p>
                     </div>
                   )}

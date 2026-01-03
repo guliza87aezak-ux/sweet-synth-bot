@@ -46,10 +46,10 @@ const ReportsView = ({ sales }: ReportsViewProps) => {
   ];
 
   const stats = [
-    { label: 'Общая выручка', value: `${totalRevenue.toLocaleString()} ₸`, icon: TrendingUp, color: 'text-accent' },
+    { label: 'Общая выручка', value: `${totalRevenue.toLocaleString()} сом`, icon: TrendingUp, color: 'text-accent' },
     { label: 'Всего продаж', value: sales.length.toString(), icon: ShoppingBag, color: 'text-primary' },
-    { label: 'Наличные', value: `${cashTotal.toLocaleString()} ₸`, icon: Banknote, color: 'text-success' },
-    { label: 'Карта', value: `${cardTotal.toLocaleString()} ₸`, icon: CreditCard, color: 'text-warning' },
+    { label: 'Наличные', value: `${cashTotal.toLocaleString()} сом`, icon: Banknote, color: 'text-success' },
+    { label: 'Карта', value: `${cardTotal.toLocaleString()} сом`, icon: CreditCard, color: 'text-warning' },
   ];
 
   return (
@@ -102,7 +102,7 @@ const ReportsView = ({ sales }: ReportsViewProps) => {
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '0.5rem',
                   }}
-                  formatter={(value: number) => [`${value.toLocaleString()} ₸`, 'Выручка']}
+                  formatter={(value: number) => [`${value.toLocaleString()} сом`, 'Выручка']}
                 />
                 <Bar dataKey="revenue" fill="hsl(152, 60%, 45%)" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -135,7 +135,7 @@ const ReportsView = ({ sales }: ReportsViewProps) => {
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '0.5rem',
                   }}
-                  formatter={(value: number) => [`${value.toLocaleString()} ₸`]}
+                  formatter={(value: number) => [`${value.toLocaleString()} сом`]}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -167,7 +167,7 @@ const ReportsView = ({ sales }: ReportsViewProps) => {
                   <p className="font-medium text-foreground truncate">{product.name}</p>
                   <p className="text-sm text-muted-foreground">{product.quantity} шт продано</p>
                 </div>
-                <p className="font-bold text-foreground">{product.revenue.toLocaleString()} ₸</p>
+                <p className="font-bold text-foreground">{product.revenue.toLocaleString()} сом</p>
               </div>
             ))
           )}

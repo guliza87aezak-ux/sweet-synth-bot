@@ -34,7 +34,7 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
           {product.name}
         </h3>
         <p className="text-lg font-bold text-accent">
-          {product.price.toLocaleString()} ₸
+          {product.price.toLocaleString()} сом
         </p>
       </div>
 
