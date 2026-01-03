@@ -1,12 +1,12 @@
 import { CartItem } from '@/types/pos';
-import { Minus, Plus, Trash2, ShoppingCart, CreditCard, Banknote } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingCart, CreditCard, Banknote, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface CartPanelProps {
   items: CartItem[];
   onUpdateQuantity: (productId: string, quantity: number) => void;
   onRemoveItem: (productId: string) => void;
-  onCheckout: (method: 'cash' | 'card') => void;
+  onCheckout: (method: 'cash' | 'card' | 'debt') => void;
   onClearCart: () => void;
 }
 
@@ -108,22 +108,30 @@ const CartPanel = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, onClearC
         </div>
 
         {/* Payment Buttons */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           <Button
             onClick={() => onCheckout('cash')}
             disabled={items.length === 0}
             className="h-14 bg-white/10 hover:bg-white/20 text-white border-0 disabled:opacity-30"
           >
-            <Banknote className="w-5 h-5 mr-2" />
-            Наличные
+            <Banknote className="w-5 h-5 mr-1" />
+            <span className="text-xs">Наличные</span>
           </Button>
           <Button
             onClick={() => onCheckout('card')}
             disabled={items.length === 0}
             className="h-14 bg-accent hover:bg-accent/90 text-accent-foreground disabled:opacity-30"
           >
-            <CreditCard className="w-5 h-5 mr-2" />
-            Карта
+            <CreditCard className="w-5 h-5 mr-1" />
+            <span className="text-xs">Карта</span>
+          </Button>
+          <Button
+            onClick={() => onCheckout('debt')}
+            disabled={items.length === 0}
+            className="h-14 bg-warning/80 hover:bg-warning text-warning-foreground disabled:opacity-30"
+          >
+            <Clock className="w-5 h-5 mr-1" />
+            <span className="text-xs">В долг</span>
           </Button>
         </div>
       </div>
