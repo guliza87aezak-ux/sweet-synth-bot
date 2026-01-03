@@ -19,7 +19,8 @@ interface ProductsViewProps {
 const emptyProduct = {
   name: '',
   price: 0,
-  category: 'bakery',
+  cost: 0,
+  category: 'hygiene',
   barcode: '',
   stock: 0,
 };
@@ -134,6 +135,7 @@ const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }
             <tr>
               <th className="text-left p-4 font-medium text-muted-foreground">Товар</th>
               <th className="text-left p-4 font-medium text-muted-foreground">Категория</th>
+              <th className="text-right p-4 font-medium text-muted-foreground">Себест.</th>
               <th className="text-right p-4 font-medium text-muted-foreground">Цена</th>
               <th className="text-right p-4 font-medium text-muted-foreground">Остаток</th>
               <th className="text-right p-4 font-medium text-muted-foreground">Действия</th>
@@ -154,6 +156,9 @@ const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }
                   </div>
                 </td>
                 <td className="p-4 text-muted-foreground capitalize">{product.category}</td>
+                <td className="p-4 text-right text-muted-foreground">
+                  {product.cost.toLocaleString()} сом
+                </td>
                 <td className="p-4 text-right font-medium text-foreground">
                   {product.price.toLocaleString()} сом
                 </td>
@@ -276,7 +281,17 @@ const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="price">Цена (сом)</Label>
+                <Label htmlFor="cost">Себестоимость (сом)</Label>
+                <Input
+                  id="cost"
+                  type="number"
+                  value={newProduct.cost || ''}
+                  onChange={(e) => setNewProduct({ ...newProduct, cost: Number(e.target.value) })}
+                  placeholder="0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="price">Цена продажи (сом)</Label>
                 <Input
                   id="price"
                   type="number"
@@ -285,16 +300,16 @@ const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }
                   placeholder="0"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="stock">Остаток</Label>
-                <Input
-                  id="stock"
-                  type="number"
-                  value={newProduct.stock || ''}
-                  onChange={(e) => setNewProduct({ ...newProduct, stock: Number(e.target.value) })}
-                  placeholder="0"
-                />
-              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="stock">Остаток</Label>
+              <Input
+                id="stock"
+                type="number"
+                value={newProduct.stock || ''}
+                onChange={(e) => setNewProduct({ ...newProduct, stock: Number(e.target.value) })}
+                placeholder="0"
+              />
             </div>
           </div>
           <DialogFooter>

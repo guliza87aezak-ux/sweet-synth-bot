@@ -2,6 +2,7 @@ export interface Product {
   id: string;
   name: string;
   price: number;
+  cost: number; // Себестоимость
   category: string;
   image?: string;
   stock: number;

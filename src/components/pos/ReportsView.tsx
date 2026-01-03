@@ -25,20 +25,28 @@ const ReportsView = ({ sales }: ReportsViewProps) => {
     };
   });
 
-  // Top products
-  const productSales: Record<string, { name: string; quantity: number; revenue: number }> = {};
+  // Top products with profit calculation
+  const productSales: Record<string, { name: string; quantity: number; revenue: number; cost: number; profit: number }> = {};
   sales.forEach((sale) => {
     sale.items.forEach((item) => {
       if (!productSales[item.id]) {
-        productSales[item.id] = { name: item.name, quantity: 0, revenue: 0 };
+        productSales[item.id] = { name: item.name, quantity: 0, revenue: 0, cost: 0, profit: 0 };
       }
       productSales[item.id].quantity += item.quantity;
       productSales[item.id].revenue += item.price * item.quantity;
+      productSales[item.id].cost += (item.cost || 0) * item.quantity;
+      productSales[item.id].profit += (item.price - (item.cost || 0)) * item.quantity;
     });
   });
   const topProducts = Object.values(productSales)
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5);
+
+  // Calculate total profit
+  const totalCost = sales.reduce((sum, sale) => 
+    sum + sale.items.reduce((itemSum, item) => itemSum + (item.cost || 0) * item.quantity, 0), 0
+  );
+  const totalProfit = totalRevenue - totalCost;
 
   const paymentData = [
     { name: 'Наличные', value: cashTotal, color: 'hsl(152, 60%, 45%)' },
@@ -47,8 +55,9 @@ const ReportsView = ({ sales }: ReportsViewProps) => {
 
   const stats = [
     { label: 'Общая выручка', value: `${totalRevenue.toLocaleString()} сом`, icon: TrendingUp, color: 'text-accent' },
+    { label: 'Прибыль', value: `${totalProfit.toLocaleString()} сом`, icon: TrendingUp, color: 'text-success' },
     { label: 'Всего продаж', value: sales.length.toString(), icon: ShoppingBag, color: 'text-primary' },
-    { label: 'Наличные', value: `${cashTotal.toLocaleString()} сом`, icon: Banknote, color: 'text-success' },
+    { label: 'Наличные', value: `${cashTotal.toLocaleString()} сом`, icon: Banknote, color: 'text-muted-foreground' },
     { label: 'Карта', value: `${cardTotal.toLocaleString()} сом`, icon: CreditCard, color: 'text-warning' },
   ];
 
@@ -167,7 +176,10 @@ const ReportsView = ({ sales }: ReportsViewProps) => {
                   <p className="font-medium text-foreground truncate">{product.name}</p>
                   <p className="text-sm text-muted-foreground">{product.quantity} шт продано</p>
                 </div>
-                <p className="font-bold text-foreground">{product.revenue.toLocaleString()} сом</p>
+                <div className="text-right">
+                  <p className="font-bold text-foreground">{product.revenue.toLocaleString()} сом</p>
+                  <p className="text-sm text-success">+{product.profit.toLocaleString()} сом прибыль</p>
+                </div>
               </div>
             ))
           )}
