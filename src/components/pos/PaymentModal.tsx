@@ -72,8 +72,8 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
           <div className="bg-white text-black font-mono text-sm">
             {/* Receipt Header */}
             <div className="p-4 text-center border-b border-dashed border-gray-300">
-              <h2 className="text-lg font-bold">МАГАЗИН</h2>
-              <p className="text-xs text-gray-600 mt-1">г. Алматы, ул. Примерная, 123</p>
+              <h2 className="text-lg font-bold">Гринлиф Эко</h2>
+              <p className="text-xs text-gray-600 mt-1">Кыргызстан</p>
               <p className="text-xs text-gray-600">Тел: +7 777 123 45 67</p>
             </div>
 
