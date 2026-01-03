@@ -2,44 +2,49 @@ import { Product, Category } from '@/types/pos';
 
 export const categories: Category[] = [
   { id: 'all', name: 'Все', icon: 'LayoutGrid' },
-  { id: 'drinks', name: 'Напитки', icon: 'Coffee' },
-  { id: 'food', name: 'Еда', icon: 'UtensilsCrossed' },
-  { id: 'snacks', name: 'Снеки', icon: 'Cookie' },
-  { id: 'dairy', name: 'Молочные', icon: 'Milk' },
-  { id: 'bakery', name: 'Выпечка', icon: 'Croissant' },
+  { id: 'hygiene', name: 'Личная гигиена', icon: 'Droplets' },
+  { id: 'home', name: 'Товары для дома', icon: 'Home' },
+  { id: 'oral', name: 'Продукты для рта', icon: 'Smile' },
+  { id: 'skincare', name: 'Уходовая косметика', icon: 'Sparkles' },
+  { id: 'makeup', name: 'Декоративная косметика', icon: 'Palette' },
+  { id: 'perfume', name: 'Парфюм', icon: 'Wind' },
 ];
 
 export const products: Product[] = [
-  // Drinks
-  { id: '1', name: 'Coca-Cola 0.5L', price: 250, category: 'drinks', stock: 50, barcode: '5449000000996' },
-  { id: '2', name: 'Fanta Orange 0.5L', price: 250, category: 'drinks', stock: 45, barcode: '5449000131805' },
-  { id: '3', name: 'Sprite 0.5L', price: 250, category: 'drinks', stock: 40, barcode: '5449000014535' },
-  { id: '4', name: 'Вода Bonaqua 0.5L', price: 150, category: 'drinks', stock: 100, barcode: '5449000000003' },
-  { id: '5', name: 'Сок Добрый 1L', price: 350, category: 'drinks', stock: 30, barcode: '4600494000019' },
-  { id: '6', name: 'Чай Lipton 0.5L', price: 200, category: 'drinks', stock: 35, barcode: '8714100711293' },
+  // Личная гигиена
+  { id: '1', name: 'Шампунь Head & Shoulders 400мл', price: 1850, category: 'hygiene', stock: 30, barcode: '5000174855753' },
+  { id: '2', name: 'Гель для душа Dove 250мл', price: 950, category: 'hygiene', stock: 45, barcode: '8717163623459' },
+  { id: '3', name: 'Мыло Safeguard', price: 350, category: 'hygiene', stock: 100, barcode: '4015400929208' },
+  { id: '4', name: 'Дезодорант Nivea 150мл', price: 1200, category: 'hygiene', stock: 40, barcode: '4005808729920' },
+  { id: '5', name: 'Влажные салфетки Huggies', price: 650, category: 'hygiene', stock: 55, barcode: '5029053534654' },
   
-  // Food
-  { id: '7', name: 'Сэндвич с курицей', price: 450, category: 'food', stock: 15, barcode: 'FOOD001' },
-  { id: '8', name: 'Сэндвич с ветчиной', price: 400, category: 'food', stock: 12, barcode: 'FOOD002' },
-  { id: '9', name: 'Салат Цезарь', price: 550, category: 'food', stock: 8, barcode: 'FOOD003' },
-  { id: '10', name: 'Хот-дог классический', price: 300, category: 'food', stock: 20, barcode: 'FOOD004' },
+  // Товары для дома
+  { id: '6', name: 'Средство для мытья посуды Fairy', price: 750, category: 'home', stock: 35, barcode: '8001090622129' },
+  { id: '7', name: 'Стиральный порошок Ariel 3кг', price: 3500, category: 'home', stock: 20, barcode: '8001090950338' },
+  { id: '8', name: 'Освежитель воздуха Glade', price: 890, category: 'home', stock: 28, barcode: '5000204757958' },
+  { id: '9', name: 'Губки для посуды 5шт', price: 280, category: 'home', stock: 60, barcode: 'HOME001' },
   
-  // Snacks
-  { id: '11', name: 'Lay\'s Классические', price: 180, category: 'snacks', stock: 60, barcode: '5010477348678' },
-  { id: '12', name: 'Pringles Original', price: 350, category: 'snacks', stock: 25, barcode: '5053990127723' },
-  { id: '13', name: 'Snickers', price: 120, category: 'snacks', stock: 80, barcode: '5000159461122' },
-  { id: '14', name: 'KitKat', price: 100, category: 'snacks', stock: 75, barcode: '7613034626837' },
-  { id: '15', name: 'M&M\'s', price: 150, category: 'snacks', stock: 55, barcode: '5000159461290' },
+  // Продукты для рта
+  { id: '10', name: 'Зубная паста Colgate 100мл', price: 680, category: 'oral', stock: 50, barcode: '8714789733296' },
+  { id: '11', name: 'Зубная щётка Oral-B', price: 450, category: 'oral', stock: 40, barcode: '4210201175643' },
+  { id: '12', name: 'Ополаскиватель Listerine 250мл', price: 1350, category: 'oral', stock: 25, barcode: '3574661253855' },
+  { id: '13', name: 'Зубная нить Oral-B', price: 580, category: 'oral', stock: 35, barcode: '4210201381808' },
   
-  // Dairy
-  { id: '16', name: 'Молоко 1L', price: 120, category: 'dairy', stock: 40, barcode: 'DAIRY001' },
-  { id: '17', name: 'Йогурт Danone', price: 90, category: 'dairy', stock: 45, barcode: 'DAIRY002' },
-  { id: '18', name: 'Сыр Голландский 200г', price: 450, category: 'dairy', stock: 18, barcode: 'DAIRY003' },
-  { id: '19', name: 'Творог 5% 200г', price: 180, category: 'dairy', stock: 22, barcode: 'DAIRY004' },
+  // Уходовая косметика
+  { id: '14', name: 'Крем для лица Nivea 50мл', price: 1450, category: 'skincare', stock: 30, barcode: '4005808178315' },
+  { id: '15', name: 'Маска для лица Garnier', price: 890, category: 'skincare', stock: 25, barcode: '3600542032537' },
+  { id: '16', name: 'Сыворотка для лица L\'Oreal', price: 2800, category: 'skincare', stock: 15, barcode: '3600523354061' },
+  { id: '17', name: 'Крем для рук Dove 75мл', price: 650, category: 'skincare', stock: 40, barcode: '8717163624463' },
   
-  // Bakery
-  { id: '20', name: 'Круассан', price: 150, category: 'bakery', stock: 25, barcode: 'BAKERY001' },
-  { id: '21', name: 'Пончик с глазурью', price: 100, category: 'bakery', stock: 30, barcode: 'BAKERY002' },
-  { id: '22', name: 'Булочка с корицей', price: 120, category: 'bakery', stock: 28, barcode: 'BAKERY003' },
-  { id: '23', name: 'Хлеб белый', price: 80, category: 'bakery', stock: 35, barcode: 'BAKERY004' },
+  // Декоративная косметика
+  { id: '18', name: 'Тушь для ресниц Maybelline', price: 2200, category: 'makeup', stock: 20, barcode: '3600530588046' },
+  { id: '19', name: 'Помада L\'Oreal Paris', price: 1850, category: 'makeup', stock: 25, barcode: '3600523465804' },
+  { id: '20', name: 'Пудра Maybelline Fit Me', price: 1650, category: 'makeup', stock: 18, barcode: '3600530910458' },
+  { id: '21', name: 'Тональный крем L\'Oreal', price: 2400, category: 'makeup', stock: 22, barcode: '3600523497584' },
+  
+  // Парфюм
+  { id: '22', name: 'Туалетная вода Hugo Boss 50мл', price: 12500, category: 'perfume', stock: 8, barcode: '737052351223' },
+  { id: '23', name: 'Парфюм Chanel Coco 30мл', price: 18900, category: 'perfume', stock: 5, barcode: '3145891135305' },
+  { id: '24', name: 'Духи Dior Sauvage 60мл', price: 15800, category: 'perfume', stock: 6, barcode: '3348901250252' },
+  { id: '25', name: 'Туалетная вода Versace 50мл', price: 9500, category: 'perfume', stock: 10, barcode: '8011003816705' },
 ];
