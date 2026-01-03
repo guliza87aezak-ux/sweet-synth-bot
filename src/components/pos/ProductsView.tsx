@@ -3,6 +3,10 @@ import { Product } from '@/types/pos';
 import { Plus, Edit2, Trash2, Search, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { categories } from '@/data/sampleProducts';
 
 interface ProductsViewProps {
   products: Product[];
@@ -11,12 +15,29 @@ interface ProductsViewProps {
   onDeleteProduct: (id: string) => void;
 }
 
+const emptyProduct = {
+  name: '',
+  price: 0,
+  category: 'bakery',
+  barcode: '',
+  stock: 0,
+};
+
 const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }: ProductsViewProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newProduct, setNewProduct] = useState(emptyProduct);
 
   const filteredProducts = products.filter(
     (p) => p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleSubmit = () => {
+    if (!newProduct.name || newProduct.price <= 0) return;
+    onAddProduct(newProduct);
+    setNewProduct(emptyProduct);
+    setIsAddDialogOpen(false);
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -26,7 +47,10 @@ const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }
           <h2 className="text-2xl font-bold text-foreground">Управление товарами</h2>
           <p className="text-muted-foreground">{products.length} товаров в каталоге</p>
         </div>
-        <Button className="bg-accent hover:bg-accent/90 text-accent-foreground">
+        <Button 
+          onClick={() => setIsAddDialogOpen(true)}
+          className="bg-accent hover:bg-accent/90 text-accent-foreground"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Добавить товар
         </Button>
@@ -108,6 +132,81 @@ const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }
           </tbody>
         </table>
       </div>
+
+      {/* Add Product Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Добавить новый товар</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Название</Label>
+              <Input
+                id="name"
+                value={newProduct.name}
+                onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                placeholder="Введите название товара"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="barcode">Штрихкод</Label>
+              <Input
+                id="barcode"
+                value={newProduct.barcode}
+                onChange={(e) => setNewProduct({ ...newProduct, barcode: e.target.value })}
+                placeholder="Введите штрихкод"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="category">Категория</Label>
+              <Select
+                value={newProduct.category}
+                onValueChange={(value) => setNewProduct({ ...newProduct, category: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите категорию" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.filter(c => c.id !== 'all').map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="price">Цена (₸)</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  value={newProduct.price || ''}
+                  onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
+                  placeholder="0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="stock">Остаток</Label>
+                <Input
+                  id="stock"
+                  type="number"
+                  value={newProduct.stock || ''}
+                  onChange={(e) => setNewProduct({ ...newProduct, stock: Number(e.target.value) })}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+              Отмена
+            </Button>
+            <Button onClick={handleSubmit} disabled={!newProduct.name || newProduct.price <= 0}>
+              Добавить
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
