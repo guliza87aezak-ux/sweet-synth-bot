@@ -155,7 +155,7 @@ const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }
                 </td>
                 <td className="p-4 text-muted-foreground capitalize">{product.category}</td>
                 <td className="p-4 text-right font-medium text-foreground">
-                  {product.price.toLocaleString()} ₸
+                  {product.price.toLocaleString()} сом
                 </td>
                 <td className="p-4 text-right">
                   <span className={`
@@ -276,7 +276,7 @@ const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="price">Цена (₸)</Label>
+                <Label htmlFor="price">Цена (сом)</Label>
                 <Input
                   id="price"
                   type="number"

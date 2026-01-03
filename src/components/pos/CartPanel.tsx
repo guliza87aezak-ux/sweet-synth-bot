@@ -56,7 +56,7 @@ const CartPanel = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, onClearC
                 <div className="flex-1 min-w-0">
                   <h4 className="font-medium text-sm truncate">{item.name}</h4>
                   <p className="text-accent text-sm font-semibold mt-1">
-                    {item.price.toLocaleString()} ₸
+                    {item.price.toLocaleString()} сом
                   </p>
                 </div>
                 <button
@@ -85,7 +85,7 @@ const CartPanel = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, onClearC
                   </button>
                 </div>
                 <span className="font-bold">
-                  {(item.price * item.quantity).toLocaleString()} ₸
+                  {(item.price * item.quantity).toLocaleString()} сом
                 </span>
               </div>
             </div>
@@ -99,11 +99,11 @@ const CartPanel = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, onClearC
         <div className="space-y-2">
           <div className="flex justify-between text-sm text-white/60">
             <span>Подитог</span>
-            <span>{subtotal.toLocaleString()} ₸</span>
+            <span>{subtotal.toLocaleString()} сом</span>
           </div>
           <div className="flex justify-between text-xl font-bold">
             <span>Итого</span>
-            <span className="text-accent">{total.toLocaleString()} ₸</span>
+            <span className="text-accent">{total.toLocaleString()} сом</span>
           </div>
         </div>
 

@@ -17,7 +17,7 @@ const SalesStats = ({ sales }: SalesStatsProps) => {
   const stats = [
     {
       label: 'Выручка сегодня',
-      value: `${totalRevenue.toLocaleString()} ₸`,
+      value: `${totalRevenue.toLocaleString()} сом`,
       icon: DollarSign,
       color: 'text-accent',
       bgColor: 'bg-accent/10',
@@ -31,7 +31,7 @@ const SalesStats = ({ sales }: SalesStatsProps) => {
     },
     {
       label: 'Средний чек',
-      value: `${Math.round(averageTicket).toLocaleString()} ₸`,
+      value: `${Math.round(averageTicket).toLocaleString()} сом`,
       icon: TrendingUp,
       color: 'text-warning',
       bgColor: 'bg-warning/10',
