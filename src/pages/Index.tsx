@@ -180,7 +180,7 @@ const Index = () => {
 
       {currentView === 'reports' && (
         <div className="flex-1 overflow-hidden">
-          <ReportsView sales={sales} />
+          <ReportsView sales={sales} products={products} />
         </div>
       )}
 
