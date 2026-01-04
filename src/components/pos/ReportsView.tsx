@@ -29,11 +29,11 @@ const ReportsView = ({ sales, products }: ReportsViewProps) => {
   });
 
   // Top products with profit calculation
-  const productSales: Record<string, { name: string; quantity: number; revenue: number; cost: number; profit: number }> = {};
+  const productSales: Record<string, { name: string; barcode?: string; quantity: number; revenue: number; cost: number; profit: number }> = {};
   sales.forEach((sale) => {
     sale.items.forEach((item) => {
       if (!productSales[item.id]) {
-        productSales[item.id] = { name: item.name, quantity: 0, revenue: 0, cost: 0, profit: 0 };
+        productSales[item.id] = { name: item.name, barcode: item.barcode, quantity: 0, revenue: 0, cost: 0, profit: 0 };
       }
       productSales[item.id].quantity += item.quantity;
       productSales[item.id].revenue += item.price * item.quantity;
@@ -182,6 +182,7 @@ const ReportsView = ({ sales, products }: ReportsViewProps) => {
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-foreground truncate">{product.name}</p>
+                  <p className="text-xs text-muted-foreground font-mono">{product.barcode || 'Без кода'}</p>
                   <p className="text-sm text-muted-foreground">{product.quantity} шт продано</p>
                 </div>
                 <div className="text-right">
