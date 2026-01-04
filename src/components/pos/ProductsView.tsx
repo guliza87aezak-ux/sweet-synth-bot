@@ -28,11 +28,25 @@ const emptyProduct = {
 const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }: ProductsViewProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [newProduct, setNewProduct] = useState(emptyProduct);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
+  const handleEditClick = (product: Product) => {
+    setEditingProduct(product);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = () => {
+    if (!editingProduct || !editingProduct.name || editingProduct.price <= 0) return;
+    onEditProduct(editingProduct);
+    setEditingProduct(null);
+    setIsEditDialogOpen(false);
+  };
 
   const filteredProducts = products.filter(
     (p) => p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -178,7 +192,7 @@ const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }
                 <td className="p-4 text-right">
                   <div className="flex items-center justify-end gap-1">
                     <button
-                      onClick={() => onEditProduct(product)}
+                      onClick={() => handleEditClick(product)}
                       className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                     >
                       <Edit2 className="w-4 h-4" />
@@ -318,6 +332,96 @@ const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }
             </Button>
             <Button onClick={handleSubmit} disabled={!newProduct.name || newProduct.price <= 0}>
               Добавить
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Product Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Редактировать товар</DialogTitle>
+          </DialogHeader>
+          {editingProduct && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Название</Label>
+                <Input
+                  id="edit-name"
+                  value={editingProduct.name}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
+                  placeholder="Введите название товара"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-barcode">Штрихкод</Label>
+                <Input
+                  id="edit-barcode"
+                  value={editingProduct.barcode || ''}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, barcode: e.target.value })}
+                  placeholder="Введите штрихкод"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-category">Категория</Label>
+                <Select
+                  value={editingProduct.category}
+                  onValueChange={(value) => setEditingProduct({ ...editingProduct, category: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите категорию" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.filter(c => c.id !== 'all').map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-cost">Себестоимость (сом)</Label>
+                  <Input
+                    id="edit-cost"
+                    type="number"
+                    value={editingProduct.cost || ''}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, cost: Number(e.target.value) })}
+                    placeholder="0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-price">Цена продажи (сом)</Label>
+                  <Input
+                    id="edit-price"
+                    type="number"
+                    value={editingProduct.price || ''}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-stock">Остаток</Label>
+                <Input
+                  id="edit-stock"
+                  type="number"
+                  value={editingProduct.stock || ''}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Отмена
+            </Button>
+            <Button 
+              onClick={handleEditSubmit} 
+              disabled={!editingProduct?.name || (editingProduct?.price ?? 0) <= 0}
+            >
+              Сохранить
             </Button>
           </DialogFooter>
         </DialogContent>

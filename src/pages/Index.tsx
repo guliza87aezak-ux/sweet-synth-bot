@@ -119,8 +119,8 @@ const Index = () => {
   };
 
   const handleEditProduct = (product: Product) => {
-    // TODO: Open edit modal
-    console.log('Edit product:', product);
+    setProducts((prev) => prev.map((p) => (p.id === product.id ? product : p)));
+    toast.success('Товар обновлён');
   };
 
   const handleDeleteProduct = (id: string) => {
