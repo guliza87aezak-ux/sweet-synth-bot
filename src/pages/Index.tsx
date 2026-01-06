@@ -12,9 +12,11 @@ import PaymentModal from '@/components/pos/PaymentModal';
 import ProductsView from '@/components/pos/ProductsView';
 import ReportsView from '@/components/pos/ReportsView';
 import DebtsView from '@/components/pos/DebtsView';
+import PinLock from '@/components/pos/PinLock';
 import { toast } from 'sonner';
 
 const Index = () => {
+  const [isUnlocked, setIsUnlocked] = useState(false);
   const [currentView, setCurrentView] = useState<'pos' | 'reports' | 'products' | 'debts'>('pos');
   const { products, loading, addProduct, editProduct, deleteProduct } = useProducts();
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -125,6 +127,11 @@ const Index = () => {
   const handleDeleteProduct = async (id: string) => {
     await deleteProduct(id);
   };
+
+  // Show PIN lock if not unlocked
+  if (!isUnlocked) {
+    return <PinLock onUnlock={() => setIsUnlocked(true)} />;
+  }
 
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
