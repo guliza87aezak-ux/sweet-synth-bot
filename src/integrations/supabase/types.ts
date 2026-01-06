@@ -14,7 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      products: {
+        Row: {
+          barcode: string | null
+          category: string
+          cost: number
+          created_at: string | null
+          id: string
+          name: string
+          price: number
+          stock: number
+          updated_at: string | null
+        }
+        Insert: {
+          barcode?: string | null
+          category: string
+          cost: number
+          created_at?: string | null
+          id?: string
+          name: string
+          price: number
+          stock?: number
+          updated_at?: string | null
+        }
+        Update: {
+          barcode?: string | null
+          category?: string
+          cost?: number
+          created_at?: string | null
+          id?: string
+          name?: string
+          price?: number
+          stock?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      sales: {
+        Row: {
+          cash_received: number | null
+          change_amount: number | null
+          created_at: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          id: string
+          is_paid: boolean | null
+          items: Json
+          payment_method: string
+          total: number
+        }
+        Insert: {
+          cash_received?: number | null
+          change_amount?: number | null
+          created_at?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          is_paid?: boolean | null
+          items: Json
+          payment_method: string
+          total: number
+        }
+        Update: {
+          cash_received?: number | null
+          change_amount?: number | null
+          created_at?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          is_paid?: boolean | null
+          items?: Json
+          payment_method?: string
+          total?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
