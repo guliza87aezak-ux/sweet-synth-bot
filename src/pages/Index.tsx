@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Product, CartItem, Sale } from '@/types/pos';
-import { products as initialProducts, categories } from '@/data/sampleProducts';
+import { categories } from '@/data/sampleProducts';
+import { useProducts } from '@/hooks/useProducts';
 import Header from '@/components/pos/Header';
 import SearchBar from '@/components/pos/SearchBar';
 import CategoryTabs from '@/components/pos/CategoryTabs';
@@ -15,7 +16,7 @@ import { toast } from 'sonner';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState<'pos' | 'reports' | 'products' | 'debts'>('pos');
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const { products, loading, addProduct, editProduct, deleteProduct } = useProducts();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -112,20 +113,17 @@ const Index = () => {
     toast.success('Долг погашен!');
   };
 
-  // Product management
-  const handleAddProduct = (product: Omit<Product, 'id'>) => {
-    const newProduct = { ...product, id: Date.now().toString() };
-    setProducts((prev) => [...prev, newProduct]);
+  // Product management - now using Supabase hooks
+  const handleAddProduct = async (product: Omit<Product, 'id'>) => {
+    await addProduct(product);
   };
 
-  const handleEditProduct = (product: Product) => {
-    setProducts((prev) => prev.map((p) => (p.id === product.id ? product : p)));
-    toast.success('Товар обновлён');
+  const handleEditProduct = async (product: Product) => {
+    await editProduct(product);
   };
 
-  const handleDeleteProduct = (id: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
-    toast.success('Товар удалён');
+  const handleDeleteProduct = async (id: string) => {
+    await deleteProduct(id);
   };
 
   return (
