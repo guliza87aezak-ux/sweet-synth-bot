@@ -24,7 +24,7 @@ const Index = () => {
   const [sales, setSales] = useState<Sale[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
-  const [paymentModal, setPaymentModal] = useState<{ isOpen: boolean; method: 'cash' | 'card' | 'debt' }>({
+  const [paymentModal, setPaymentModal] = useState<{ isOpen: boolean; method: 'cash' | 'card' | 'debt' | 'mixed' }>({
     isOpen: false,
     method: 'cash',
   });
@@ -112,12 +112,12 @@ const Index = () => {
   };
 
   // Open payment modal
-  const handleCheckout = (method: 'cash' | 'card' | 'debt') => {
+  const handleCheckout = (method: 'cash' | 'card' | 'debt' | 'mixed') => {
     setPaymentModal({ isOpen: true, method });
   };
 
   // Confirm payment
-  const handlePaymentConfirm = (cashReceived?: number, customerName?: string, customerPhone?: string) => {
+  const handlePaymentConfirm = (cashReceived?: number, customerName?: string, customerPhone?: string, cashAmount?: number, cardAmount?: number) => {
     const sale: Sale = {
       id: Date.now().toString(),
       items: [...cart],
@@ -129,6 +129,8 @@ const Index = () => {
       customerName,
       customerPhone,
       isPaid: paymentModal.method !== 'debt',
+      cashAmount,
+      cardAmount,
     };
 
     setSales((prev) => [...prev, sale]);

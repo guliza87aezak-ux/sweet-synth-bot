@@ -1,12 +1,12 @@
 import { CartItem } from '@/types/pos';
-import { Minus, Plus, Trash2, ShoppingCart, CreditCard, Banknote, Clock } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingCart, CreditCard, Banknote, Clock, Blend } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface CartPanelProps {
   items: CartItem[];
   onUpdateQuantity: (productId: string, quantity: number) => void;
   onRemoveItem: (productId: string) => void;
-  onCheckout: (method: 'cash' | 'card' | 'debt') => void;
+  onCheckout: (method: 'cash' | 'card' | 'debt' | 'mixed') => void;
   onClearCart: () => void;
 }
 
@@ -108,29 +108,37 @@ const CartPanel = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, onClearC
         </div>
 
         {/* Payment Buttons */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <Button
             onClick={() => onCheckout('cash')}
             disabled={items.length === 0}
-            className="h-14 bg-white/10 hover:bg-white/20 text-white border-0 disabled:opacity-30"
+            className="h-12 bg-white/10 hover:bg-white/20 text-white border-0 disabled:opacity-30"
           >
-            <Banknote className="w-5 h-5 mr-1" />
+            <Banknote className="w-4 h-4 mr-1" />
             <span className="text-xs">Наличные</span>
           </Button>
           <Button
             onClick={() => onCheckout('card')}
             disabled={items.length === 0}
-            className="h-14 bg-accent hover:bg-accent/90 text-accent-foreground disabled:opacity-30"
+            className="h-12 bg-accent hover:bg-accent/90 text-accent-foreground disabled:opacity-30"
           >
-            <CreditCard className="w-5 h-5 mr-1" />
+            <CreditCard className="w-4 h-4 mr-1" />
             <span className="text-xs">Карта</span>
+          </Button>
+          <Button
+            onClick={() => onCheckout('mixed')}
+            disabled={items.length === 0}
+            className="h-12 bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-30"
+          >
+            <Blend className="w-4 h-4 mr-1" />
+            <span className="text-xs">Смешанная</span>
           </Button>
           <Button
             onClick={() => onCheckout('debt')}
             disabled={items.length === 0}
-            className="h-14 bg-warning/80 hover:bg-warning text-warning-foreground disabled:opacity-30"
+            className="h-12 bg-warning/80 hover:bg-warning text-warning-foreground disabled:opacity-30"
           >
-            <Clock className="w-5 h-5 mr-1" />
+            <Clock className="w-4 h-4 mr-1" />
             <span className="text-xs">В долг</span>
           </Button>
         </div>
