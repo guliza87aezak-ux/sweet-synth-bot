@@ -5,9 +5,17 @@ interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
   onBarcodeClick?: () => void;
+  onBarcodeSubmit?: (barcode: string) => void;
 }
 
-const SearchBar = ({ value, onChange, onBarcodeClick }: SearchBarProps) => {
+const SearchBar = ({ value, onChange, onBarcodeClick, onBarcodeSubmit }: SearchBarProps) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && value.trim() && onBarcodeSubmit) {
+      e.preventDefault();
+      onBarcodeSubmit(value.trim());
+    }
+  };
+
   return (
     <div className="relative flex gap-2">
       <div className="relative flex-1">
@@ -17,6 +25,7 @@ const SearchBar = ({ value, onChange, onBarcodeClick }: SearchBarProps) => {
           placeholder="Поиск товара или штрих-код..."
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           className="pl-10 h-12 bg-card border-border text-base"
         />
       </div>
