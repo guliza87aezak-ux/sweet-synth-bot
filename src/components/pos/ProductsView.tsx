@@ -49,7 +49,8 @@ const ProductsView = ({ products, onAddProduct, onEditProduct, onDeleteProduct }
   };
 
   const filteredProducts = products.filter(
-    (p) => p.name.toLowerCase().includes(searchQuery.toLowerCase())
+    (p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           p.barcode?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleSubmit = () => {
