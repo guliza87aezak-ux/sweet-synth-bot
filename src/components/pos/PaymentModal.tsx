@@ -420,9 +420,34 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
                       {mixedTotal.toLocaleString()} / {total.toLocaleString()} сом
                     </p>
                     {mixedTotal < total && (
-                      <p className="text-xs text-destructive mt-1">
-                        Осталось: {(total - mixedTotal).toLocaleString()} сом
-                      </p>
+                      <div className="mt-2 space-y-1">
+                        <p className="text-xs text-destructive">
+                          Осталось: {(total - mixedTotal).toLocaleString()} сом
+                        </p>
+                        <div className="flex gap-2 justify-center mt-2">
+                          <button
+                            type="button"
+                            onClick={() => setMixedCash((mixedCashNum + (total - mixedTotal)).toString())}
+                            className="px-3 py-1.5 text-xs bg-white/80 hover:bg-white rounded-lg border transition-colors flex items-center gap-1"
+                          >
+                            <Banknote className="w-3 h-3" /> + Наличные
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMixedCard((mixedCardNum + (total - mixedTotal)).toString())}
+                            className="px-3 py-1.5 text-xs bg-white/80 hover:bg-white rounded-lg border transition-colors flex items-center gap-1"
+                          >
+                            <CreditCard className="w-3 h-3" /> + Карта
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMixedDebt((mixedDebtNum + (total - mixedTotal)).toString())}
+                            className="px-3 py-1.5 text-xs bg-warning/20 hover:bg-warning/30 rounded-lg border border-warning/30 transition-colors flex items-center gap-1"
+                          >
+                            <Clock className="w-3 h-3" /> + Долг
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
