@@ -28,12 +28,28 @@ const Index = () => {
     method: 'cash',
   });
 
+  // Handle search with barcode auto-add
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    
+    // Check for exact barcode match and auto-add to cart
+    if (value.trim()) {
+      const exactBarcodeMatch = products.find(
+        (p) => p.barcode && p.barcode === value.trim()
+      );
+      if (exactBarcodeMatch) {
+        handleAddToCart(exactBarcodeMatch);
+        setSearchQuery(''); // Clear search after adding
+      }
+    }
+  };
+
   // Filter products
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
       const matchesSearch =
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.barcode?.includes(searchQuery);
+        product.barcode?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
       return matchesSearch && matchesCategory;
     });
@@ -146,7 +162,7 @@ const Index = () => {
 
             {/* Search & Categories */}
             <div className="mt-4 space-y-4">
-              <SearchBar value={searchQuery} onChange={setSearchQuery} />
+              <SearchBar value={searchQuery} onChange={handleSearchChange} />
               <CategoryTabs
                 categories={categories}
                 activeCategory={activeCategory}
