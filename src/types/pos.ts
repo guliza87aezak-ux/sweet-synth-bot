@@ -32,6 +32,7 @@ export interface Sale {
   isPaid?: boolean; // Для отслеживания погашенных долгов
   cashAmount?: number; // Для смешанной оплаты
   cardAmount?: number; // Для смешанной оплаты
+  debtAmount?: number; // Для смешанной оплаты
 }
 
 export interface DailySummary {
