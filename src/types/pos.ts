@@ -23,13 +23,15 @@ export interface Sale {
   id: string;
   items: CartItem[];
   total: number;
-  paymentMethod: 'cash' | 'card' | 'debt';
+  paymentMethod: 'cash' | 'card' | 'debt' | 'mixed';
   timestamp: Date;
   cashReceived?: number;
   change?: number;
   customerName?: string; // Для долгов
   customerPhone?: string; // Для долгов
   isPaid?: boolean; // Для отслеживания погашенных долгов
+  cashAmount?: number; // Для смешанной оплаты
+  cardAmount?: number; // Для смешанной оплаты
 }
 
 export interface DailySummary {

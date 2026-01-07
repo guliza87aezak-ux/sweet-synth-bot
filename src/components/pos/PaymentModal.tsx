@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CheckCircle2, Banknote, CreditCard, Printer, Receipt, Clock } from 'lucide-react';
+import { CheckCircle2, Banknote, CreditCard, Printer, Receipt, Clock, Blend } from 'lucide-react';
 import { CartItem } from '@/types/pos';
 import { Label } from '@/components/ui/label';
 
@@ -10,9 +10,9 @@ interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   total: number;
-  method: 'cash' | 'card' | 'debt';
+  method: 'cash' | 'card' | 'debt' | 'mixed';
   items: CartItem[];
-  onConfirm: (cashReceived?: number, customerName?: string, customerPhone?: string) => void;
+  onConfirm: (cashReceived?: number, customerName?: string, customerPhone?: string, cashAmount?: number, cardAmount?: number) => void;
 }
 
 const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: PaymentModalProps) => {
@@ -22,17 +22,21 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
   const [isProcessing, setIsProcessing] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
+  
+  // Mixed payment state
+  const [mixedCash, setMixedCash] = useState<string>('');
+  const [mixedCard, setMixedCard] = useState<string>('');
 
   const cashAmount = parseFloat(cashReceived) || 0;
   const change = cashAmount - total;
-  const canConfirm = method === 'card' || method === 'debt' || (method === 'cash' && cashAmount >= total);
+  const canConfirm = method === 'card' || method === 'debt' || method === 'mixed' || (method === 'cash' && cashAmount >= total);
   const canConfirmDebt = method !== 'debt' || (customerName.trim() !== '');
-
-  const quickAmounts = [
-    Math.ceil(total / 1000) * 1000,
-    Math.ceil(total / 5000) * 5000,
-    Math.ceil(total / 10000) * 10000,
-  ].filter((v, i, a) => a.indexOf(v) === i && v >= total);
+  
+  // Mixed payment validation
+  const mixedCashNum = parseFloat(mixedCash) || 0;
+  const mixedCardNum = parseFloat(mixedCard) || 0;
+  const mixedTotal = mixedCashNum + mixedCardNum;
+  const canConfirmMixed = method !== 'mixed' || mixedTotal >= total;
 
   const currentDate = new Date();
 
@@ -54,13 +58,17 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
     onConfirm(
       method === 'cash' ? cashAmount : undefined,
       method === 'debt' ? customerName : undefined,
-      method === 'debt' ? customerPhone : undefined
+      method === 'debt' ? customerPhone : undefined,
+      method === 'mixed' ? mixedCashNum : undefined,
+      method === 'mixed' ? mixedCardNum : undefined
     );
     setShowReceipt(false);
     setIsComplete(false);
     setCashReceived('');
     setCustomerName('');
     setCustomerPhone('');
+    setMixedCash('');
+    setMixedCard('');
   };
 
   const handleClose = () => {
@@ -70,8 +78,26 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
       setCashReceived('');
       setCustomerName('');
       setCustomerPhone('');
+      setMixedCash('');
+      setMixedCard('');
     }
   };
+
+  // Auto-calculate remaining for mixed payment
+  useEffect(() => {
+    if (method === 'mixed' && mixedCash) {
+      const remaining = total - mixedCashNum;
+      if (remaining > 0) {
+        setMixedCard(remaining.toString());
+      }
+    }
+  }, [mixedCash, total, method, mixedCashNum]);
+
+  const quickAmounts = [
+    Math.ceil(total / 1000) * 1000,
+    Math.ceil(total / 5000) * 5000,
+    Math.ceil(total / 10000) * 10000,
+  ].filter((v, i, a) => a.indexOf(v) === i && v >= total);
 
   const handlePrint = () => {
     window.print();
@@ -135,7 +161,7 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
             <div className="px-4 py-2 border-b border-dashed border-gray-300">
               <div className="flex justify-between text-xs">
                 <span>Способ оплаты:</span>
-                <span>{method === 'cash' ? 'Наличные' : method === 'card' ? 'Карта' : 'В долг'}</span>
+                <span>{method === 'cash' ? 'Наличные' : method === 'card' ? 'Карта' : method === 'mixed' ? 'Смешанная' : 'В долг'}</span>
               </div>
               {method === 'debt' && customerName && (
                 <div className="flex justify-between text-xs mt-1">
@@ -152,6 +178,18 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
                   <div className="flex justify-between text-xs mt-1 font-medium">
                     <span>Сдача:</span>
                     <span>{change.toLocaleString()} сом</span>
+                  </div>
+                </>
+              )}
+              {method === 'mixed' && (
+                <>
+                  <div className="flex justify-between text-xs mt-1">
+                    <span>Наличные:</span>
+                    <span>{mixedCashNum.toLocaleString()} сом</span>
+                  </div>
+                  <div className="flex justify-between text-xs mt-1">
+                    <span>Карта:</span>
+                    <span>{mixedCardNum.toLocaleString()} сом</span>
                   </div>
                 </>
               )}
@@ -210,6 +248,11 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
                   <>
                     <CreditCard className="w-5 h-5 text-accent" />
                     Оплата картой
+                  </>
+                ) : method === 'mixed' ? (
+                  <>
+                    <Blend className="w-5 h-5 text-purple-500" />
+                    Смешанная оплата
                   </>
                 ) : (
                   <>
@@ -277,6 +320,56 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
                 </div>
               )}
 
+              {/* Mixed payment form */}
+              {method === 'mixed' && (
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl bg-purple-500/10 text-center mb-4">
+                    <Blend className="w-12 h-12 mx-auto mb-3 text-purple-500" />
+                    <p className="text-muted-foreground">Разделить оплату</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="mixedCash" className="flex items-center gap-2">
+                      <Banknote className="w-4 h-4" /> Наличные
+                    </Label>
+                    <Input
+                      id="mixedCash"
+                      type="number"
+                      value={mixedCash}
+                      onChange={(e) => setMixedCash(e.target.value)}
+                      placeholder="0"
+                      className="h-12 text-lg font-semibold"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="mixedCard" className="flex items-center gap-2">
+                      <CreditCard className="w-4 h-4" /> Карта
+                    </Label>
+                    <Input
+                      id="mixedCard"
+                      type="number"
+                      value={mixedCard}
+                      onChange={(e) => setMixedCard(e.target.value)}
+                      placeholder="0"
+                      className="h-12 text-lg font-semibold"
+                    />
+                  </div>
+                  
+                  {/* Mixed total status */}
+                  <div className={`p-4 rounded-xl text-center ${mixedTotal >= total ? 'bg-success/10' : 'bg-destructive/10'}`}>
+                    <p className="text-sm text-muted-foreground">Итого введено</p>
+                    <p className={`text-2xl font-bold ${mixedTotal >= total ? 'text-success' : 'text-destructive'}`}>
+                      {mixedTotal.toLocaleString()} / {total.toLocaleString()} сом
+                    </p>
+                    {mixedTotal < total && (
+                      <p className="text-sm text-destructive mt-1">
+                        Осталось: {(total - mixedTotal).toLocaleString()} сом
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Debt form */}
               {method === 'debt' && (
                 <div className="space-y-4">
@@ -314,7 +407,7 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
               </Button>
               <Button
                 onClick={handleConfirm}
-                disabled={!canConfirm || !canConfirmDebt || isProcessing}
+                disabled={!canConfirm || !canConfirmDebt || !canConfirmMixed || isProcessing}
                 className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground"
               >
                 {isProcessing ? 'Обработка...' : 'Подтвердить'}
