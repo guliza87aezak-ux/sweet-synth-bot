@@ -488,13 +488,25 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
               <Button variant="outline" onClick={handleClose} className="flex-1" disabled={isProcessing}>
                 Отмена
               </Button>
-              <Button
-                onClick={handleConfirm}
-                disabled={!canConfirm || !canConfirmDebt || !canConfirmMixed || isProcessing}
-                className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground"
-              >
-                {isProcessing ? 'Обработка...' : 'Подтвердить'}
-              </Button>
+              {method === 'mixed' ? (
+                <Button
+                  onClick={handleConfirm}
+                  disabled={!canConfirmMixed || isProcessing}
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50"
+                >
+                  {isProcessing ? 'Обработка...' : (
+                    canConfirmMixed ? '✓ Подтвердить оплату' : `Введите ещё ${(total - mixedTotal).toLocaleString()} сом`
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleConfirm}
+                  disabled={!canConfirm || !canConfirmDebt || isProcessing}
+                  className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground"
+                >
+                  {isProcessing ? 'Обработка...' : 'Подтвердить'}
+                </Button>
+              )}
             </div>
           </>
         )}
