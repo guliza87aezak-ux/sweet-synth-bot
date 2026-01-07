@@ -12,7 +12,7 @@ interface PaymentModalProps {
   total: number;
   method: 'cash' | 'card' | 'debt' | 'mixed';
   items: CartItem[];
-  onConfirm: (cashReceived?: number, customerName?: string, customerPhone?: string, cashAmount?: number, cardAmount?: number) => void;
+  onConfirm: (cashReceived?: number, customerName?: string, customerPhone?: string, cashAmount?: number, cardAmount?: number, debtAmount?: number) => void;
 }
 
 const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: PaymentModalProps) => {
@@ -26,6 +26,9 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
   // Mixed payment state
   const [mixedCash, setMixedCash] = useState<string>('');
   const [mixedCard, setMixedCard] = useState<string>('');
+  const [mixedDebt, setMixedDebt] = useState<string>('');
+  const [mixedCustomerName, setMixedCustomerName] = useState('');
+  const [mixedCustomerPhone, setMixedCustomerPhone] = useState('');
 
   const cashAmount = parseFloat(cashReceived) || 0;
   const change = cashAmount - total;
@@ -35,8 +38,9 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
   // Mixed payment validation
   const mixedCashNum = parseFloat(mixedCash) || 0;
   const mixedCardNum = parseFloat(mixedCard) || 0;
-  const mixedTotal = mixedCashNum + mixedCardNum;
-  const canConfirmMixed = method !== 'mixed' || mixedTotal >= total;
+  const mixedDebtNum = parseFloat(mixedDebt) || 0;
+  const mixedTotal = mixedCashNum + mixedCardNum + mixedDebtNum;
+  const canConfirmMixed = method !== 'mixed' || (mixedTotal >= total && (mixedDebtNum === 0 || mixedCustomerName.trim() !== ''));
 
   const currentDate = new Date();
 
@@ -57,10 +61,11 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
   const handleCloseReceipt = () => {
     onConfirm(
       method === 'cash' ? cashAmount : undefined,
-      method === 'debt' ? customerName : undefined,
-      method === 'debt' ? customerPhone : undefined,
+      method === 'debt' ? customerName : (method === 'mixed' && mixedDebtNum > 0 ? mixedCustomerName : undefined),
+      method === 'debt' ? customerPhone : (method === 'mixed' && mixedDebtNum > 0 ? mixedCustomerPhone : undefined),
       method === 'mixed' ? mixedCashNum : undefined,
-      method === 'mixed' ? mixedCardNum : undefined
+      method === 'mixed' ? mixedCardNum : undefined,
+      method === 'mixed' ? mixedDebtNum : undefined
     );
     setShowReceipt(false);
     setIsComplete(false);
@@ -69,6 +74,9 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
     setCustomerPhone('');
     setMixedCash('');
     setMixedCard('');
+    setMixedDebt('');
+    setMixedCustomerName('');
+    setMixedCustomerPhone('');
   };
 
   const handleClose = () => {
@@ -80,18 +88,13 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
       setCustomerPhone('');
       setMixedCash('');
       setMixedCard('');
+      setMixedDebt('');
+      setMixedCustomerName('');
+      setMixedCustomerPhone('');
     }
   };
 
-  // Auto-calculate remaining for mixed payment
-  useEffect(() => {
-    if (method === 'mixed' && mixedCash) {
-      const remaining = total - mixedCashNum;
-      if (remaining > 0) {
-        setMixedCard(remaining.toString());
-      }
-    }
-  }, [mixedCash, total, method, mixedCashNum]);
+  // Remove auto-calculate - let user control all fields manually
 
   const quickAmounts = [
     Math.ceil(total / 1000) * 1000,
@@ -183,14 +186,32 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
               )}
               {method === 'mixed' && (
                 <>
-                  <div className="flex justify-between text-xs mt-1">
-                    <span>Наличные:</span>
-                    <span>{mixedCashNum.toLocaleString()} сом</span>
-                  </div>
-                  <div className="flex justify-between text-xs mt-1">
-                    <span>Карта:</span>
-                    <span>{mixedCardNum.toLocaleString()} сом</span>
-                  </div>
+                  {mixedCashNum > 0 && (
+                    <div className="flex justify-between text-xs mt-1">
+                      <span>Наличные:</span>
+                      <span>{mixedCashNum.toLocaleString()} сом</span>
+                    </div>
+                  )}
+                  {mixedCardNum > 0 && (
+                    <div className="flex justify-between text-xs mt-1">
+                      <span>Карта:</span>
+                      <span>{mixedCardNum.toLocaleString()} сом</span>
+                    </div>
+                  )}
+                  {mixedDebtNum > 0 && (
+                    <>
+                      <div className="flex justify-between text-xs mt-1">
+                        <span>В долг:</span>
+                        <span>{mixedDebtNum.toLocaleString()} сом</span>
+                      </div>
+                      {mixedCustomerName && (
+                        <div className="flex justify-between text-xs mt-1">
+                          <span>Клиент:</span>
+                          <span>{mixedCustomerName}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </>
               )}
             </div>
@@ -323,46 +344,83 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
               {/* Mixed payment form */}
               {method === 'mixed' && (
                 <div className="space-y-4">
-                  <div className="p-4 rounded-xl bg-purple-500/10 text-center mb-4">
-                    <Blend className="w-12 h-12 mx-auto mb-3 text-purple-500" />
-                    <p className="text-muted-foreground">Разделить оплату</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="mixedCash" className="flex items-center gap-2">
-                      <Banknote className="w-4 h-4" /> Наличные
-                    </Label>
-                    <Input
-                      id="mixedCash"
-                      type="number"
-                      value={mixedCash}
-                      onChange={(e) => setMixedCash(e.target.value)}
-                      placeholder="0"
-                      className="h-12 text-lg font-semibold"
-                      autoFocus
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="mixedCard" className="flex items-center gap-2">
-                      <CreditCard className="w-4 h-4" /> Карта
-                    </Label>
-                    <Input
-                      id="mixedCard"
-                      type="number"
-                      value={mixedCard}
-                      onChange={(e) => setMixedCard(e.target.value)}
-                      placeholder="0"
-                      className="h-12 text-lg font-semibold"
-                    />
+                  <div className="p-3 rounded-xl bg-purple-500/10 text-center">
+                    <Blend className="w-8 h-8 mx-auto mb-2 text-purple-500" />
+                    <p className="text-sm text-muted-foreground">Разделить оплату</p>
                   </div>
                   
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="space-y-1">
+                      <Label htmlFor="mixedCash" className="flex items-center gap-1 text-xs">
+                        <Banknote className="w-3 h-3" /> Наличные
+                      </Label>
+                      <Input
+                        id="mixedCash"
+                        type="number"
+                        value={mixedCash}
+                        onChange={(e) => setMixedCash(e.target.value)}
+                        placeholder="0"
+                        className="h-10 text-center font-semibold"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="mixedCard" className="flex items-center gap-1 text-xs">
+                        <CreditCard className="w-3 h-3" /> Карта
+                      </Label>
+                      <Input
+                        id="mixedCard"
+                        type="number"
+                        value={mixedCard}
+                        onChange={(e) => setMixedCard(e.target.value)}
+                        placeholder="0"
+                        className="h-10 text-center font-semibold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="mixedDebt" className="flex items-center gap-1 text-xs">
+                        <Clock className="w-3 h-3" /> В долг
+                      </Label>
+                      <Input
+                        id="mixedDebt"
+                        type="number"
+                        value={mixedDebt}
+                        onChange={(e) => setMixedDebt(e.target.value)}
+                        placeholder="0"
+                        className="h-10 text-center font-semibold"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Customer info for debt portion */}
+                  {mixedDebtNum > 0 && (
+                    <div className="p-3 rounded-lg bg-warning/10 space-y-3">
+                      <p className="text-xs text-warning font-medium">Данные клиента для долга</p>
+                      <div className="space-y-2">
+                        <Input
+                          value={mixedCustomerName}
+                          onChange={(e) => setMixedCustomerName(e.target.value)}
+                          placeholder="Имя клиента *"
+                          className="h-9"
+                        />
+                        <Input
+                          value={mixedCustomerPhone}
+                          onChange={(e) => setMixedCustomerPhone(e.target.value)}
+                          placeholder="+996 XXX XXX XXX"
+                          className="h-9"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Mixed total status */}
-                  <div className={`p-4 rounded-xl text-center ${mixedTotal >= total ? 'bg-success/10' : 'bg-destructive/10'}`}>
-                    <p className="text-sm text-muted-foreground">Итого введено</p>
-                    <p className={`text-2xl font-bold ${mixedTotal >= total ? 'text-success' : 'text-destructive'}`}>
+                  <div className={`p-3 rounded-xl text-center ${mixedTotal >= total ? 'bg-success/10' : 'bg-destructive/10'}`}>
+                    <p className="text-xs text-muted-foreground">Итого введено</p>
+                    <p className={`text-xl font-bold ${mixedTotal >= total ? 'text-success' : 'text-destructive'}`}>
                       {mixedTotal.toLocaleString()} / {total.toLocaleString()} сом
                     </p>
                     {mixedTotal < total && (
-                      <p className="text-sm text-destructive mt-1">
+                      <p className="text-xs text-destructive mt-1">
                         Осталось: {(total - mixedTotal).toLocaleString()} сом
                       </p>
                     )}

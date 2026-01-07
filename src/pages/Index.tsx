@@ -117,7 +117,7 @@ const Index = () => {
   };
 
   // Confirm payment
-  const handlePaymentConfirm = (cashReceived?: number, customerName?: string, customerPhone?: string, cashAmount?: number, cardAmount?: number) => {
+  const handlePaymentConfirm = (cashReceived?: number, customerName?: string, customerPhone?: string, cashAmount?: number, cardAmount?: number, debtAmount?: number) => {
     const sale: Sale = {
       id: Date.now().toString(),
       items: [...cart],
@@ -128,15 +128,23 @@ const Index = () => {
       change: cashReceived ? cashReceived - cartTotal : undefined,
       customerName,
       customerPhone,
-      isPaid: paymentModal.method !== 'debt',
+      isPaid: paymentModal.method !== 'debt' && !(paymentModal.method === 'mixed' && debtAmount && debtAmount > 0),
       cashAmount,
       cardAmount,
+      debtAmount,
     };
 
     setSales((prev) => [...prev, sale]);
     setCart([]);
     setPaymentModal({ isOpen: false, method: 'cash' });
-    toast.success(paymentModal.method === 'debt' ? 'Продажа в долг оформлена!' : 'Продажа завершена!');
+    
+    if (paymentModal.method === 'mixed' && debtAmount && debtAmount > 0) {
+      toast.success('Смешанная оплата оформлена (есть долг)!');
+    } else if (paymentModal.method === 'debt') {
+      toast.success('Продажа в долг оформлена!');
+    } else {
+      toast.success('Продажа завершена!');
+    }
   };
 
   // Pay debt
