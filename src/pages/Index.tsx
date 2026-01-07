@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Product, CartItem, Sale } from '@/types/pos';
 import { categories } from '@/data/sampleProducts';
 import { useProducts } from '@/hooks/useProducts';
+import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/pos/Header';
 import SearchBar from '@/components/pos/SearchBar';
 import CategoryTabs from '@/components/pos/CategoryTabs';
@@ -28,14 +29,34 @@ const Index = () => {
     method: 'cash',
   });
 
-  // Handle barcode submit on Enter key
-  const handleBarcodeSubmit = (barcode: string) => {
-    const exactBarcodeMatch = products.find(
-      (p) => p.barcode && p.barcode === barcode
-    );
-    if (exactBarcodeMatch) {
-      handleAddToCart(exactBarcodeMatch);
-      setSearchQuery(''); // Clear search after adding
+  // Handle barcode submit on Enter key - search in Supabase
+  const handleBarcodeSubmit = async (barcode: string) => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('barcode', barcode)
+      .maybeSingle();
+
+    if (error) {
+      toast.error('Издөөдө ката');
+      return;
+    }
+
+    if (data) {
+      const product: Product = {
+        id: data.id,
+        name: data.name,
+        price: Number(data.price),
+        cost: Number(data.cost),
+        category: data.category,
+        stock: data.stock,
+        barcode: data.barcode || undefined,
+      };
+      handleAddToCart(product);
+      setSearchQuery('');
+      toast.success(`${product.name} кошулду`);
+    } else {
+      toast.error('Товар табылган жок');
     }
   };
 
