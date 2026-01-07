@@ -28,19 +28,14 @@ const Index = () => {
     method: 'cash',
   });
 
-  // Handle search with barcode auto-add
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    
-    // Check for exact barcode match and auto-add to cart
-    if (value.trim()) {
-      const exactBarcodeMatch = products.find(
-        (p) => p.barcode && p.barcode === value.trim()
-      );
-      if (exactBarcodeMatch) {
-        handleAddToCart(exactBarcodeMatch);
-        setSearchQuery(''); // Clear search after adding
-      }
+  // Handle barcode submit on Enter key
+  const handleBarcodeSubmit = (barcode: string) => {
+    const exactBarcodeMatch = products.find(
+      (p) => p.barcode && p.barcode === barcode
+    );
+    if (exactBarcodeMatch) {
+      handleAddToCart(exactBarcodeMatch);
+      setSearchQuery(''); // Clear search after adding
     }
   };
 
@@ -162,7 +157,11 @@ const Index = () => {
 
             {/* Search & Categories */}
             <div className="mt-4 space-y-4">
-              <SearchBar value={searchQuery} onChange={handleSearchChange} />
+              <SearchBar 
+                value={searchQuery} 
+                onChange={setSearchQuery} 
+                onBarcodeSubmit={handleBarcodeSubmit}
+              />
               <CategoryTabs
                 categories={categories}
                 activeCategory={activeCategory}
