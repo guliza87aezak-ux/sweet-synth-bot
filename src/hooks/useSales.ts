@@ -17,22 +17,30 @@ export const useSales = () => {
 
       if (error) throw error;
 
-      const mappedSales: Sale[] = (data || []).map((sale) => ({
-        id: sale.id,
-        items: (sale.items as unknown as CartItem[]) || [],
-        total: Number(sale.total),
-        paymentMethod: sale.payment_method as 'cash' | 'card' | 'debt' | 'mixed',
-        timestamp: new Date(sale.created_at || new Date()),
-        cashReceived: sale.cash_received ? Number(sale.cash_received) : undefined,
-        change: sale.change_amount ? Number(sale.change_amount) : undefined,
-        customerName: sale.customer_name || undefined,
-        customerPhone: sale.customer_phone || undefined,
-        isPaid: sale.is_paid ?? true,
-        // Extract mixed payment amounts from items JSON if stored there
-        cashAmount: (sale.items as any)?.cashAmount,
-        cardAmount: (sale.items as any)?.cardAmount,
-        debtAmount: (sale.items as any)?.debtAmount,
-      }));
+      const mappedSales: Sale[] = (data || []).map((sale) => {
+        // Items can be stored as { items: [...], cashAmount, ... } or directly as array
+        const itemsData = sale.items as any;
+        const cartItems: CartItem[] = Array.isArray(itemsData) 
+          ? itemsData 
+          : (itemsData?.items || []);
+        
+        return {
+          id: sale.id,
+          items: cartItems,
+          total: Number(sale.total),
+          paymentMethod: sale.payment_method as 'cash' | 'card' | 'debt' | 'mixed',
+          timestamp: new Date(sale.created_at || new Date()),
+          cashReceived: sale.cash_received ? Number(sale.cash_received) : undefined,
+          change: sale.change_amount ? Number(sale.change_amount) : undefined,
+          customerName: sale.customer_name || undefined,
+          customerPhone: sale.customer_phone || undefined,
+          isPaid: sale.is_paid ?? true,
+          // Extract mixed payment amounts from items JSON if stored there
+          cashAmount: itemsData?.cashAmount,
+          cardAmount: itemsData?.cardAmount,
+          debtAmount: itemsData?.debtAmount,
+        };
+      });
 
       setSales(mappedSales);
     } catch (error) {
