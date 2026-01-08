@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
-import { Product, CartItem, Sale } from '@/types/pos';
+import { Product, CartItem } from '@/types/pos';
 import { categories } from '@/data/sampleProducts';
 import { useProducts } from '@/hooks/useProducts';
+import { useSales } from '@/hooks/useSales';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/pos/Header';
 import SearchBar from '@/components/pos/SearchBar';
@@ -20,8 +21,8 @@ const Index = () => {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [currentView, setCurrentView] = useState<'pos' | 'reports' | 'products' | 'debts'>('pos');
   const { products, loading, addProduct, editProduct, deleteProduct } = useProducts();
+  const { sales, addSale, payDebt } = useSales();
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [sales, setSales] = useState<Sale[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [paymentModal, setPaymentModal] = useState<{ isOpen: boolean; method: 'cash' | 'card' | 'debt' | 'mixed' }>({
@@ -116,45 +117,37 @@ const Index = () => {
     setPaymentModal({ isOpen: true, method });
   };
 
-  // Confirm payment
-  const handlePaymentConfirm = (cashReceived?: number, customerName?: string, customerPhone?: string, cashAmount?: number, cardAmount?: number, debtAmount?: number) => {
-    const sale: Sale = {
-      id: Date.now().toString(),
-      items: [...cart],
-      total: cartTotal,
-      paymentMethod: paymentModal.method,
-      timestamp: new Date(),
+  // Confirm payment - save to Supabase
+  const handlePaymentConfirm = async (cashReceived?: number, customerName?: string, customerPhone?: string, cashAmount?: number, cardAmount?: number, debtAmount?: number) => {
+    const result = await addSale(
+      [...cart],
+      cartTotal,
+      paymentModal.method,
       cashReceived,
-      change: cashReceived ? cashReceived - cartTotal : undefined,
       customerName,
       customerPhone,
-      isPaid: paymentModal.method !== 'debt' && !(paymentModal.method === 'mixed' && debtAmount && debtAmount > 0),
       cashAmount,
       cardAmount,
-      debtAmount,
-    };
+      debtAmount
+    );
 
-    setSales((prev) => [...prev, sale]);
-    setCart([]);
-    setPaymentModal({ isOpen: false, method: 'cash' });
-    
-    if (paymentModal.method === 'mixed' && debtAmount && debtAmount > 0) {
-      toast.success('Смешанная оплата оформлена (есть долг)!');
-    } else if (paymentModal.method === 'debt') {
-      toast.success('Продажа в долг оформлена!');
-    } else {
-      toast.success('Продажа завершена!');
+    if (result) {
+      setCart([]);
+      setPaymentModal({ isOpen: false, method: 'cash' });
+      
+      if (paymentModal.method === 'mixed' && debtAmount && debtAmount > 0) {
+        toast.success('Смешанная оплата оформлена (есть долг)!');
+      } else if (paymentModal.method === 'debt') {
+        toast.success('Продажа в долг оформлена!');
+      } else {
+        toast.success('Продажа завершена!');
+      }
     }
   };
 
-  // Pay debt
-  const handlePayDebt = (saleId: string) => {
-    setSales((prev) =>
-      prev.map((sale) =>
-        sale.id === saleId ? { ...sale, isPaid: true } : sale
-      )
-    );
-    toast.success('Долг погашен!');
+  // Pay debt - update in Supabase
+  const handlePayDebt = async (saleId: string) => {
+    await payDebt(saleId);
   };
 
   // Product management - now using Supabase hooks
