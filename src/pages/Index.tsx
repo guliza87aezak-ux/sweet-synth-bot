@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 const Index = () => {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [currentView, setCurrentView] = useState<'pos' | 'reports' | 'products' | 'debts'>('pos');
-  const { products, loading, addProduct, editProduct, deleteProduct } = useProducts();
+  const { products, loading, addProduct, editProduct, deleteProduct, refetch: refetchProducts } = useProducts();
   const { sales, addSale, payDebt } = useSales();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -134,6 +134,9 @@ const Index = () => {
     if (result) {
       setCart([]);
       setPaymentModal({ isOpen: false, method: 'cash' });
+      
+      // Refresh products to get updated stock
+      await refetchProducts();
       
       if (paymentModal.method === 'mixed' && debtAmount && debtAmount > 0) {
         toast.success('Смешанная оплата оформлена (есть долг)!');

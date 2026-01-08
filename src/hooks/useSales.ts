@@ -98,6 +98,18 @@ export const useSales = () => {
 
       if (error) throw error;
 
+      // Update stock for each product sold
+      for (const item of cart) {
+        const { error: stockError } = await supabase
+          .from('products')
+          .update({ stock: item.stock - item.quantity })
+          .eq('id', item.id);
+
+        if (stockError) {
+          console.error('Error updating stock for product:', item.id, stockError);
+        }
+      }
+
       const newSale: Sale = {
         id: data.id,
         items: cart,
