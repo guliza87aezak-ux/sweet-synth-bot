@@ -344,9 +344,23 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
               {/* Mixed payment form */}
               {method === 'mixed' && (
                 <div className="space-y-4">
-                  <div className="p-3 rounded-xl bg-purple-500/10 text-center">
-                    <Blend className="w-8 h-8 mx-auto mb-2 text-purple-500" />
-                    <p className="text-sm text-muted-foreground">Разделить оплату</p>
+                  {/* Confirm button at top - prominent position */}
+                  <Button
+                    onClick={handleConfirm}
+                    disabled={!canConfirmMixed || isProcessing}
+                    className="w-full h-14 text-lg font-bold bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50 shadow-lg"
+                  >
+                    {isProcessing ? 'Обработка...' : (
+                      canConfirmMixed ? '✓ Подтвердить оплату' : `Введите ещё ${(total - mixedTotal).toLocaleString()} сом`
+                    )}
+                  </Button>
+
+                  {/* Mixed total status */}
+                  <div className={`p-3 rounded-xl text-center ${mixedTotal >= total ? 'bg-success/10' : 'bg-destructive/10'}`}>
+                    <p className="text-xs text-muted-foreground">Итого введено</p>
+                    <p className={`text-xl font-bold ${mixedTotal >= total ? 'text-success' : 'text-destructive'}`}>
+                      {mixedTotal.toLocaleString()} / {total.toLocaleString()} сом
+                    </p>
                   </div>
                   
                   <div className="grid grid-cols-3 gap-2">
@@ -392,6 +406,33 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
                     </div>
                   </div>
 
+                  {/* Quick add remaining buttons */}
+                  {mixedTotal < total && (
+                    <div className="flex gap-2 justify-center">
+                      <button
+                        type="button"
+                        onClick={() => setMixedCash((mixedCashNum + (total - mixedTotal)).toString())}
+                        className="px-3 py-1.5 text-xs bg-muted hover:bg-muted/80 rounded-lg border transition-colors flex items-center gap-1"
+                      >
+                        <Banknote className="w-3 h-3" /> + Наличные
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMixedCard((mixedCardNum + (total - mixedTotal)).toString())}
+                        className="px-3 py-1.5 text-xs bg-muted hover:bg-muted/80 rounded-lg border transition-colors flex items-center gap-1"
+                      >
+                        <CreditCard className="w-3 h-3" /> + Карта
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMixedDebt((mixedDebtNum + (total - mixedTotal)).toString())}
+                        className="px-3 py-1.5 text-xs bg-warning/20 hover:bg-warning/30 rounded-lg border border-warning/30 transition-colors flex items-center gap-1"
+                      >
+                        <Clock className="w-3 h-3" /> + Долг
+                      </button>
+                    </div>
+                  )}
+
                   {/* Customer info for debt portion */}
                   {mixedDebtNum > 0 && (
                     <div className="p-3 rounded-lg bg-warning/10 space-y-3">
@@ -412,44 +453,6 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
                       </div>
                     </div>
                   )}
-                  
-                  {/* Mixed total status */}
-                  <div className={`p-3 rounded-xl text-center ${mixedTotal >= total ? 'bg-success/10' : 'bg-destructive/10'}`}>
-                    <p className="text-xs text-muted-foreground">Итого введено</p>
-                    <p className={`text-xl font-bold ${mixedTotal >= total ? 'text-success' : 'text-destructive'}`}>
-                      {mixedTotal.toLocaleString()} / {total.toLocaleString()} сом
-                    </p>
-                    {mixedTotal < total && (
-                      <div className="mt-2 space-y-1">
-                        <p className="text-xs text-destructive">
-                          Осталось: {(total - mixedTotal).toLocaleString()} сом
-                        </p>
-                        <div className="flex gap-2 justify-center mt-2">
-                          <button
-                            type="button"
-                            onClick={() => setMixedCash((mixedCashNum + (total - mixedTotal)).toString())}
-                            className="px-3 py-1.5 text-xs bg-white/80 hover:bg-white rounded-lg border transition-colors flex items-center gap-1"
-                          >
-                            <Banknote className="w-3 h-3" /> + Наличные
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setMixedCard((mixedCardNum + (total - mixedTotal)).toString())}
-                            className="px-3 py-1.5 text-xs bg-white/80 hover:bg-white rounded-lg border transition-colors flex items-center gap-1"
-                          >
-                            <CreditCard className="w-3 h-3" /> + Карта
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setMixedDebt((mixedDebtNum + (total - mixedTotal)).toString())}
-                            className="px-3 py-1.5 text-xs bg-warning/20 hover:bg-warning/30 rounded-lg border border-warning/30 transition-colors flex items-center gap-1"
-                          >
-                            <Clock className="w-3 h-3" /> + Долг
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
                 </div>
               )}
 
@@ -488,17 +491,7 @@ const PaymentModal = ({ isOpen, onClose, total, method, items, onConfirm }: Paym
               <Button variant="outline" onClick={handleClose} className="flex-1" disabled={isProcessing}>
                 Отмена
               </Button>
-              {method === 'mixed' ? (
-                <Button
-                  onClick={handleConfirm}
-                  disabled={!canConfirmMixed || isProcessing}
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50"
-                >
-                  {isProcessing ? 'Обработка...' : (
-                    canConfirmMixed ? '✓ Подтвердить оплату' : `Введите ещё ${(total - mixedTotal).toLocaleString()} сом`
-                  )}
-                </Button>
-              ) : (
+              {method !== 'mixed' && (
                 <Button
                   onClick={handleConfirm}
                   disabled={!canConfirm || !canConfirmDebt || isProcessing}
