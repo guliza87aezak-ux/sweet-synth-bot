@@ -177,8 +177,8 @@ const Index = () => {
 
       {currentView === 'pos' && (
         <div className="flex-1 flex overflow-hidden">
-          {/* Products Panel */}
-          <div className="flex-1 flex flex-col p-4 lg:p-6 overflow-hidden">
+          {/* Products Panel - 1/4 of screen */}
+          <div className="w-1/4 flex-shrink-0 flex flex-col p-4 overflow-hidden">
             {/* Stats */}
             <SalesStats sales={sales} />
 
@@ -215,8 +215,8 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Cart Panel */}
-          <div className="w-80 lg:w-96 flex-shrink-0 border-l border-border">
+          {/* Cart Panel - 3/4 of screen */}
+          <div className="w-3/4 flex-shrink-0 border-l border-border">
             <CartPanel
               items={cart}
               onUpdateQuantity={handleUpdateQuantity}
