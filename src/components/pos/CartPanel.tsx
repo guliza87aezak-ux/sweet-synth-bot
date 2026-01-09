@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { CartItem } from '@/types/pos';
 import { Minus, Plus, Trash2, ShoppingCart, CreditCard, Banknote, Clock, Blend } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,19 @@ interface CartPanelProps {
 }
 
 const CartPanel = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, onClearCart }: CartPanelProps) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const prevItemsLengthRef = useRef(items.length);
+
+  // Auto-scroll to bottom when new item is added
+  useEffect(() => {
+    if (items.length > prevItemsLengthRef.current && scrollRef.current) {
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+    prevItemsLengthRef.current = items.length;
+  }, [items.length]);
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const tax = 0; // No tax for this demo
   const total = subtotal + tax;
@@ -39,7 +53,7 @@ const CartPanel = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, onClearC
       </div>
 
       {/* Cart Items */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 pos-scrollbar">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 pos-scrollbar">
         {items.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-white/30">
             <ShoppingCart className="w-12 h-12 mb-3" />
