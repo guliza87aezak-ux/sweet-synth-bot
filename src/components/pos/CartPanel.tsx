@@ -47,44 +47,50 @@ const CartPanel = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, onClearC
             <p className="text-xs mt-1">Добавьте товары для продажи</p>
           </div>
         ) : (
-          items.map((item) => (
+          items.map((item, index) => (
             <div
               key={item.id}
-              className="p-3 rounded-xl bg-pos-cart-item animate-slide-in-right"
+              className="p-4 rounded-2xl bg-pos-cart-item animate-slide-in-right border border-white/5"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm truncate">{item.name}</h4>
-                  <p className="text-accent text-sm font-semibold mt-1">
-                    {item.price.toLocaleString()} сом
-                  </p>
+              {/* Item number badge */}
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-sm shrink-0">
+                    {index + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-base truncate">{item.name}</h4>
+                    <p className="text-accent text-lg font-bold mt-1">
+                      {item.price.toLocaleString()} сом
+                    </p>
+                  </div>
                 </div>
                 <button
                   onClick={() => onRemoveItem(item.id)}
-                  className="p-1.5 text-white/40 hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                  className="p-2 text-white/40 hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-5 h-5" />
                 </button>
               </div>
               
               {/* Quantity Controls */}
-              <div className="flex items-center justify-between mt-3">
-                <div className="flex items-center gap-1 bg-pos-quantity-bg rounded-lg p-1">
+              <div className="flex items-center justify-between mt-4">
+                <div className="flex items-center gap-2 bg-pos-quantity-bg rounded-xl p-1.5">
                   <button
                     onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                    className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors"
+                    className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors"
                   >
-                    <Minus className="w-4 h-4" />
+                    <Minus className="w-5 h-5" />
                   </button>
-                  <span className="w-10 text-center font-semibold">{item.quantity}</span>
+                  <span className="w-12 text-center font-bold text-lg">{item.quantity}</span>
                   <button
                     onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                    className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors"
+                    className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors"
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-5 h-5" />
                   </button>
                 </div>
-                <span className="font-bold">
+                <span className="font-bold text-xl">
                   {(item.price * item.quantity).toLocaleString()} сом
                 </span>
               </div>
