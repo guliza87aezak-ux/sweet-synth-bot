@@ -247,6 +247,7 @@ const Index = () => {
               onRemoveItem={handleRemoveItem}
               onCheckout={handleCheckout}
               onClearCart={handleClearCart}
+              onBarcodeSubmit={handleBarcodeSubmit}
             />
           </div>
         </div>
