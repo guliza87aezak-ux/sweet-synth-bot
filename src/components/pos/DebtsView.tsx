@@ -1,17 +1,53 @@
-import { Sale } from '@/types/pos';
-import { Clock, User, Phone, CheckCircle, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { Sale, Product } from '@/types/pos';
+import { Clock, User, Phone, CheckCircle, AlertCircle, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface DebtsViewProps {
   sales: Sale[];
   onPayDebt: (saleId: string) => void;
+  onAddDebt: (customerName: string, customerPhone: string, amount: number, description: string) => Promise<void>;
+  products: Product[];
 }
 
-const DebtsView = ({ sales, onPayDebt }: DebtsViewProps) => {
+const DebtsView = ({ sales, onPayDebt, onAddDebt, products }: DebtsViewProps) => {
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [amount, setAmount] = useState('');
+  const [description, setDescription] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const debts = sales.filter((s) => s.paymentMethod === 'debt');
   const unpaidDebts = debts.filter((s) => !s.isPaid);
   const paidDebts = debts.filter((s) => s.isPaid);
   const totalUnpaidDebt = unpaidDebts.reduce((sum, s) => sum + s.total, 0);
+
+  const handleAddDebt = async () => {
+    if (!customerName.trim() || !amount || Number(amount) <= 0) return;
+    
+    setIsSubmitting(true);
+    try {
+      await onAddDebt(customerName.trim(), customerPhone.trim(), Number(amount), description.trim());
+      setCustomerName('');
+      setCustomerPhone('');
+      setAmount('');
+      setDescription('');
+      setIsAddModalOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const resetForm = () => {
+    setCustomerName('');
+    setCustomerPhone('');
+    setAmount('');
+    setDescription('');
+  };
 
   return (
     <div className="p-6 space-y-6 overflow-y-auto">
@@ -21,11 +57,20 @@ const DebtsView = ({ sales, onPayDebt }: DebtsViewProps) => {
           <h2 className="text-2xl font-bold text-foreground">Долги</h2>
           <p className="text-muted-foreground">Список должников магазина</p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-warning/10 border border-warning/30">
-          <AlertCircle className="w-4 h-4 text-warning" />
-          <span className="text-sm font-medium text-warning">
-            Общий долг: {totalUnpaidDebt.toLocaleString()} сом
-          </span>
+        <div className="flex items-center gap-4">
+          <Button
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-primary hover:bg-primary/90"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Долг кошуу
+          </Button>
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-warning/10 border border-warning/30">
+            <AlertCircle className="w-4 h-4 text-warning" />
+            <span className="text-sm font-medium text-warning">
+              Общий долг: {totalUnpaidDebt.toLocaleString()} сом
+            </span>
+          </div>
         </div>
       </div>
 
@@ -132,6 +177,76 @@ const DebtsView = ({ sales, onPayDebt }: DebtsViewProps) => {
           </div>
         </div>
       )}
+
+      {/* Add Debt Modal */}
+      <Dialog open={isAddModalOpen} onOpenChange={(open) => {
+        setIsAddModalOpen(open);
+        if (!open) resetForm();
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Жаңы долг кошуу</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="customerName">Кардардын аты *</Label>
+              <Input
+                id="customerName"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="Аты-жөнү"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="customerPhone">Телефон номери</Label>
+              <Input
+                id="customerPhone"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                placeholder="+996 XXX XXX XXX"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="amount">Долг суммасы (сом) *</Label>
+              <Input
+                id="amount"
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0"
+                min="0"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Сүрөттөмө (милдеттүү эмес)</Label>
+              <Input
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Эмне үчүн долг?"
+              />
+            </div>
+          </div>
+          <div className="flex gap-3 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsAddModalOpen(false);
+                resetForm();
+              }}
+            >
+              Жокко чыгаруу
+            </Button>
+            <Button
+              onClick={handleAddDebt}
+              disabled={!customerName.trim() || !amount || Number(amount) <= 0 || isSubmitting}
+              className="bg-primary hover:bg-primary/90"
+            >
+              {isSubmitting ? 'Сакталууда...' : 'Долг кошуу'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -153,6 +153,30 @@ const Index = () => {
     await payDebt(saleId);
   };
 
+  // Add debt manually
+  const handleAddDebt = async (customerName: string, customerPhone: string, amount: number, description: string) => {
+    const manualDebtItem = {
+      id: 'manual-debt-' + Date.now(),
+      name: description || 'Кол менен кошулган долг',
+      price: amount,
+      cost: 0,
+      category: 'debt',
+      stock: 0,
+      quantity: 1,
+    };
+
+    await addSale(
+      [manualDebtItem],
+      amount,
+      'debt',
+      undefined,
+      customerName,
+      customerPhone,
+      undefined,
+      undefined,
+      undefined
+    );
+  };
   // Product management - now using Supabase hooks
   const handleAddProduct = async (product: Omit<Product, 'id'>) => {
     await addProduct(product);
@@ -241,7 +265,7 @@ const Index = () => {
 
       {currentView === 'debts' && (
         <div className="flex-1 overflow-y-auto">
-          <DebtsView sales={sales} onPayDebt={handlePayDebt} />
+          <DebtsView sales={sales} onPayDebt={handlePayDebt} onAddDebt={handleAddDebt} products={products} />
         </div>
       )}
 
