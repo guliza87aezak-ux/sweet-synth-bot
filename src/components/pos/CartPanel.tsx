@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CartItem } from '@/types/pos';
-import { Minus, Plus, Trash2, ShoppingCart, CreditCard, Banknote, Clock, Blend } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingCart, CreditCard, Banknote, Clock, Blend, ScanBarcode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface CartPanelProps {
   items: CartItem[];
@@ -9,11 +10,15 @@ interface CartPanelProps {
   onRemoveItem: (productId: string) => void;
   onCheckout: (method: 'cash' | 'card' | 'debt' | 'mixed') => void;
   onClearCart: () => void;
+  onBarcodeSubmit?: (barcode: string) => void;
 }
 
-const CartPanel = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, onClearCart }: CartPanelProps) => {
+const CartPanel = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, onClearCart, onBarcodeSubmit }: CartPanelProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const prevItemsLengthRef = useRef(items.length);
+  const [showScanner, setShowScanner] = useState(false);
+  const [barcodeInput, setBarcodeInput] = useState('');
+  const barcodeInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll to bottom when new item is added
   useEffect(() => {
@@ -25,6 +30,22 @@ const CartPanel = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, onClearC
     }
     prevItemsLengthRef.current = items.length;
   }, [items.length]);
+
+  // Auto-focus barcode input when scanner is shown
+  useEffect(() => {
+    if (showScanner && barcodeInputRef.current) {
+      barcodeInputRef.current.focus();
+    }
+  }, [showScanner]);
+
+  const handleBarcodeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && barcodeInput.trim() && onBarcodeSubmit) {
+      e.preventDefault();
+      onBarcodeSubmit(barcodeInput.trim());
+      setBarcodeInput('');
+    }
+  };
+
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const tax = 0; // No tax for this demo
   const total = subtotal + tax;
@@ -38,18 +59,42 @@ const CartPanel = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, onClearC
             <ShoppingCart className="w-5 h-5" />
             <h2 className="font-semibold text-lg">Корзина</h2>
           </div>
-          {items.length > 0 && (
+          <div className="flex items-center gap-2">
             <button
-              onClick={onClearCart}
-              className="text-sm text-white/50 hover:text-white/80 transition-colors"
+              onClick={() => setShowScanner(!showScanner)}
+              className={`p-2 rounded-lg transition-colors ${showScanner ? 'bg-accent text-accent-foreground' : 'text-white/50 hover:text-white/80 hover:bg-white/10'}`}
             >
-              Очистить
+              <ScanBarcode className="w-5 h-5" />
             </button>
-          )}
+            {items.length > 0 && (
+              <button
+                onClick={onClearCart}
+                className="text-sm text-white/50 hover:text-white/80 transition-colors"
+              >
+                Очистить
+              </button>
+            )}
+          </div>
         </div>
         <p className="text-sm text-white/50 mt-1">
           {items.length} {items.length === 1 ? 'товар' : items.length > 1 && items.length < 5 ? 'товара' : 'товаров'}
         </p>
+        
+        {/* Barcode Scanner Input */}
+        {showScanner && (
+          <div className="mt-3">
+            <Input
+              ref={barcodeInputRef}
+              type="text"
+              placeholder="Штрих-код сканерлеңиз..."
+              value={barcodeInput}
+              onChange={(e) => setBarcodeInput(e.target.value)}
+              onKeyDown={handleBarcodeKeyDown}
+              className="bg-white/10 border-white/20 text-white placeholder:text-white/40 h-12"
+              autoFocus
+            />
+          </div>
+        )}
       </div>
 
       {/* Cart Items */}
